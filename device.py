@@ -101,13 +101,13 @@ class Devices(ComplexModel):
     _type_info = [
         ('synchronousMachines', Array(SynchronousMachine)),
         ('solars', Array(Solar)),
-        ('batterys', Array(Battery)),
+        ('batteries', Array(Battery)),
     ]
 
-    def __init__(self, synchronousMachines, solars, batterys):
+    def __init__(self, synchronousMachines, solars, batteries):
         super().__init__()
         self.synchronousMachines = synchronousMachines
         self.solars = solars
-        self.batterys = batterys
+        self.batteries = batteries
 
 

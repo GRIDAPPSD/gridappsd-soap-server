@@ -16,10 +16,11 @@ import time
 import json
 import pprint
 import uuid
+from lxml import etree
 
 # from spyne import Application, ServiceBase, Unicode, rpc
 
-from spyne import Application, rpc, ServiceBase, Iterable, Integer, Unicode, util, xml, AnyXml, Array, AnyDict
+from spyne import Application, Service, ComplexModel, rpc, ServiceBase, Iterable, Integer, Unicode, util, xml, AnyXml, Array, AnyDict
 
 from spyne.protocol.soap import Soap11
 from spyne.server.wsgi import WsgiApplication
@@ -132,36 +133,93 @@ class CreateDERGroupsService(ServiceBase):
         return re
 
 
-class HelloWorldService(ServiceBase):
-    @rpc(Unicode, Integer, _returns=Iterable(Unicode))
-    def say_hello(ctx, name, times):
-        """Docstrings for service methods appear as documentation in the wsdl.
-        <b>What fun!</b>
-
-        @param name the name to say hello to
-        @param times the number of times to say hello
-        @return the completed array
-        """
-
-        for i in range(times):
-            yield u'Hello, %s' % name
+# class HelloWorldService(ServiceBase):
+#     @rpc(Unicode, Integer, _returns=Iterable(Unicode))
+#     def say_hello(ctx, name, times):
+#         """Docstrings for service methods appear as documentation in the wsdl.
+#         <b>What fun!</b>
+#
+#         @param name the name to say hello to
+#         @param times the number of times to say hello
+#         @return the completed array
+#         """
+#
+#         for i in range(times):
+#             yield u'Hello, %s' % name
 
 getDevices = Application(
     services=[GetDevicesService],
-    tns='http://127.0.0.1:8008',
+    tns='der.pnnl.gov',
     name='GetDevicesService',
     in_protocol=Soap11(validator='lxml'),
     out_protocol=Soap11())
 createDERGroups = Application(
     services=[CreateDERGroupsService],
-    tns='http://127.0.0.1:8008',
+    tns='der.pnnl.gov',
     name='CreateDERGroupsService',
     in_protocol=Soap11(validator='lxml'),
     out_protocol=Soap11()
 )
+intr = getDevices.interface
+imports = intr.imports
+
+print('imports: ', imports)
+tns = getDevices.interface.get_tns()
+print('tns: ', tns)
+smm = getDevices.interface.service_method_map
+print('smm: ', smm)
+print(smm['{%s}GetDevices' % tns][0].service_class)
+print(smm['{%s}GetDevices' % tns][0].service_class == GetDevicesService)
+print(smm['{%s}GetDevices' % tns][0].function)
+print(smm['{%s}GetDevices' % tns][0].function == GetDevicesService.GetDevices)
+from spyne.interface.wsdl import Wsdl11
+wsdl = Wsdl11(intr)
+wsdl.build_interface_document('URL')
+wsdl_str = wsdl.get_interface_document()
+pprint.pprint(wsdl_str)
+wsdl_doc = etree.fromstring(wsdl_str)
+pprint.pprint('wsdl_doc')
+pprint.pprint(wsdl_doc)
+
+imports2 = createDERGroups.interface.imports
+print('imports2: ', imports2)
+tns2 = createDERGroups.interface.get_tns()
+print('tns2: ', tns2)
+smm2 = createDERGroups.interface.service_method_map
+print('smm2: ', smm2)
+print(smm2['{%s}CreateDERGroups' % tns2][0].service_class)
+print(smm2['{%s}CreateDERGroups' % tns2][0].function)
+
+RequestStatus = Unicode(values=['new', 'processed'], zonta='bonta')
+
+
+class DataRequest(ComplexModel):
+    status = Array(RequestStatus)
+
+
+class HelloWorldService(Service):
+    @rpc(DataRequest)
+    def some_call(ctx, dgrntcl):
+        pass
+
+
+hw = Application([HelloWorldService], 'spyne.examples.hello.soap',
+            in_protocol=Soap11(validator='lxml'),
+            out_protocol=Soap11())
+
+from spyne.util.xml import get_schema_documents
+docs = get_schema_documents([ResponseMessage])
+print(docs)
+doc = docs['tns']
+print(doc)
+pprint.pprint(etree.tostring(doc, pretty_print=True))
+
+print(ResponseMessage.resolve_namespace(ResponseMessage, __name__))
+
 wsgi_app = WsgiMounter({
     'getDevices': getDevices,
     'createDERGroups': createDERGroups,
+    'hw': hw
 })
 
 # application = Application(

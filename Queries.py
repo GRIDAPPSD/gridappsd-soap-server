@@ -23,6 +23,32 @@ GROUP by ?name ?bus ?ratedS ?ratedU ?p ?q ?id ?fdrid
 ORDER by ?name
 """
 
+# # another way from dermsgui.py in gridappsd-cim-interop
+# # it's slower, and the eqid and id are the same
+# querySynchronousMachine="""
+# PREFIX r: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+# PREFIX c: <http://iec.ch/TC57/CIM100#>
+# PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+# SELECT ?name ?bus ?ratedS ?ratedU ?p ?q (group_concat(distinct ?phs;separator="\\n") as ?phases) ?eqid ?fdrid WHERE {
+# 	SELECT ?name ?bus ?ratedS ?ratedU ?p ?q ?eqid ?fdrid ?phs WHERE { ?s c:Equipment.EquipmentContainer ?fdr.
+#  ?fdr c:IdentifiedObject.mRID ?fdrid.
+#  ?s r:type c:SynchronousMachine.
+#  ?s c:IdentifiedObject.name ?name.
+#  ?s c:IdentifiedObject.mRID ?eqid.
+#  ?s c:SynchronousMachine.ratedS ?ratedS.
+#  ?s c:SynchronousMachine.ratedU ?ratedU.
+#  ?s c:SynchronousMachine.p ?p.
+#  ?s c:SynchronousMachine.q ?q.
+#  ?t c:Terminal.ConductingEquipment ?s.
+#  ?t c:Terminal.ConnectivityNode ?cn.
+#  ?cn c:IdentifiedObject.name ?bus.
+#  OPTIONAL {?smp c:SynchronousMachinePhase.SynchronousMachine ?s.
+#  ?smp c:SynchronousMachinePhase.phase ?phsraw.
+#    bind(strafter(str(?phsraw),"SinglePhaseKind.") as ?phs) } } ORDER BY ?name ?phs
+#  } GROUP BY ?name ?bus ?ratedS ?ratedU ?p ?q ?eqid ?fdrid
+#  ORDER BY ?name
+# """
+
 querySolar = """# Solar - DistSolar
 PREFIX r:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
 PREFIX c:  <http://iec.ch/TC57/CIM100#>
@@ -56,6 +82,37 @@ SELECT ?name ?bus ?ratedS ?ratedU ?ipu ?p ?q ?id ?fdrid (group_concat(distinct ?
 GROUP by ?name ?bus ?ratedS ?ratedU ?ipu ?p ?q ?id ?fdrid
 ORDER by ?name
 """
+
+# # Another way to query solar from dermsgui.py in gridappsd-cim-interop
+# # it's slower, and the eqid and id are different
+# querySolar="""
+# PREFIX r: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+# PREFIX c: <http://iec.ch/TC57/CIM100#>
+# PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+# SELECT ?name ?uname ?bus ?ratedS ?ratedU ?p ?q (group_concat(distinct ?phs;separator="\\n") as ?phases) ?eqid ?fdrid WHERE {
+# 	SELECT ?name ?uname ?bus ?ratedS ?ratedU ?p ?q ?eqid ?fdrid ?phs WHERE { ?s c:Equipment.EquipmentContainer ?fdr.
+#  ?fdr c:IdentifiedObject.mRID ?fdrid.
+# ?s r:type c:PowerElectronicsConnection.
+#  ?s c:IdentifiedObject.name ?name.
+#  ?s c:IdentifiedObject.mRID ?eqid.
+#  ?peu r:type c:PhotovoltaicUnit.
+#  ?peu c:IdentifiedObject.name ?uname.
+#  ?s c:PowerElectronicsConnection.PowerElectronicsUnit ?peu.
+#  ?s c:PowerElectronicsConnection.ratedS ?ratedS.
+#  ?s c:PowerElectronicsConnection.ratedU ?ratedU.
+#  ?s c:PowerElectronicsConnection.p ?p.
+#  ?s c:PowerElectronicsConnection.q ?q.
+#  ?t c:Terminal.ConductingEquipment ?s.
+#  ?t c:Terminal.ConnectivityNode ?cn.
+#  ?cn c:IdentifiedObject.name ?bus.
+#  OPTIONAL {?pep c:PowerElectronicsConnectionPhase.PowerElectronicsConnection ?s.
+#  ?pep c:PowerElectronicsConnectionPhase.phase ?phsraw.
+# 	bind(strafter(str(?phsraw),"SinglePhaseKind.") as ?phs) } } ORDER BY ?name ?phs
+#  } GROUP BY ?name ?uname ?bus ?ratedS ?ratedU ?p ?q ?eqid ?fdrid
+#  ORDER BY ?name
+# """
+
+
 
 queryBattery = """# Storage - DistStorage
 PREFIX r:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
@@ -94,3 +151,34 @@ SELECT ?name ?bus ?ratedS ?ratedU ?ipu ?ratedE ?storedE ?state ?p ?q ?id ?fdrid 
 GROUP by ?name ?bus ?ratedS ?ratedU ?ipu ?ratedE ?storedE ?state ?p ?q ?id ?fdrid
 ORDER by ?name
 """
+
+# # Another way to query battery from dermsgui.py in gridappsd-cim-interop
+# # it's slower, and the eqid and id are different
+# queryBattery = """
+# PREFIX r: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+# PREFIX c: <http://iec.ch/TC57/CIM100#>
+# PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+# SELECT ?name ?uname ?bus ?ratedS ?ratedU ?ratedE ?storedE ?p ?q (group_concat(distinct ?phs;separator="\\n") as ?phases) ?eqid ?fdrid WHERE {
+# 	SELECT ?name ?uname ?bus ?ratedS ?ratedU ?ratedE ?storedE ?p ?q ?eqid ?fdrid ?phs WHERE { ?s c:Equipment.EquipmentContainer ?fdr.
+#  ?fdr c:IdentifiedObject.mRID ?fdrid.
+#  ?s r:type c:PowerElectronicsConnection.
+#  ?s c:IdentifiedObject.name ?name.
+#  ?s c:IdentifiedObject.mRID ?eqid.
+#  ?peu r:type c:BatteryUnit.
+#  ?peu c:IdentifiedObject.name ?uname.
+#  ?s c:PowerElectronicsConnection.PowerElectronicsUnit ?peu.
+#  ?s c:PowerElectronicsConnection.ratedS ?ratedS.
+#  ?s c:PowerElectronicsConnection.ratedU ?ratedU.
+#  ?s c:PowerElectronicsConnection.p ?p.
+#  ?s c:PowerElectronicsConnection.q ?q.
+#  ?peu c:BatteryUnit.ratedE ?ratedE.
+#  ?peu c:BatteryUnit.storedE ?storedE.
+#  ?t c:Terminal.ConductingEquipment ?s.
+#  ?t c:Terminal.ConnectivityNode ?cn.
+#  ?cn c:IdentifiedObject.name ?bus.
+#  OPTIONAL {?pep c:PowerElectronicsConnectionPhase.PowerElectronicsConnection ?s.
+#  ?pep c:PowerElectronicsConnectionPhase.phase ?phsraw.
+# 	bind(strafter(str(?phsraw),"SinglePhaseKind.") as ?phs) } } ORDER BY ?name ?phs
+#  } GROUP BY ?name ?uname ?bus ?ratedS ?ratedU ?ratedE ?storedE ?p ?q ?eqid ?fdrid
+#  ORDER BY ?name
+# """

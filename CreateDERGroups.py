@@ -3,6 +3,7 @@ from spyne import ComplexModel, Unicode, Integer, Uuid, Array, DateTime, Boolean
 
 
 class Header(ComplexModel):
+    # __namespace__ = "header"
     _type_info = [
         ('Verb', Unicode),
         ('Noun', Unicode),
@@ -11,8 +12,8 @@ class Header(ComplexModel):
         ('CorrelationID', Uuid),
     ]
 
-    def __init__(self):
-        super().__init__()
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
 
 
 class DERFunction(ComplexModel):
@@ -28,8 +29,8 @@ class DERFunction(ComplexModel):
         ('voltWattCurveFunction', Boolean),
     ]
 
-    def __init__(self):
-        super().__init__()
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
 
 
 class Version(ComplexModel):
@@ -40,8 +41,8 @@ class Version(ComplexModel):
         ('revision', Integer),
     ]
 
-    def __init__(self):
-        super().__init__()
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
 
 
 class EndDeviceType(ComplexModel):
@@ -50,18 +51,18 @@ class EndDeviceType(ComplexModel):
         ('mRID', Uuid)#XmlData(Uuid)
     ]
 
-    def __init__(self):
-        super().__init__()
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
 
 
-class nameType(ComplexModel):
+class NameType(ComplexModel):
     __type_name__ = 'name'
     _type_info = [
         ('name', Unicode)
     ]
 
-    def __init__(self):
-        super().__init__()
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
 
 
 class EndDeviceGroup(ComplexModel):
@@ -70,21 +71,22 @@ class EndDeviceGroup(ComplexModel):
         ('description', Unicode),
         ('DERFunction', DERFunction),
         ('EndDevices', EndDeviceType.customize(max_occurs="unbounded")),
-        ('Names', nameType.customize(max_occurs="unbounded")),
+        ('Names', NameType.customize(max_occurs="unbounded")),
         ('version', Version),
     ]
 
-    def __init__(self):
-        super().__init__()
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
 
 
 class Payload(ComplexModel):
+    # __namespace__ = "payload"
     _type_info = [
         ('DERGroups', Array(EndDeviceGroup)),
     ]
 
-    def __init__(self):
-        super().__init__()
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
 
 
 class DERGroupsMessage(ComplexModel):
@@ -93,8 +95,8 @@ class DERGroupsMessage(ComplexModel):
         ('Payload', Payload),
     ]
 
-    def __init__(self):
-        super().__init__()
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
 
 
 class UUIDWithAttribute(ComplexModel):
@@ -149,5 +151,5 @@ class ResponseMessage(ComplexModel):
         ('Reply', Reply),
     ]
 
-    def __init__(self):
-        super().__init__()
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
