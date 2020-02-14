@@ -28,7 +28,11 @@ from spyne.util.wsgi_wrapper import WsgiMounter
 from gridappsd import GridAPPSD
 from gridappsd import topics as t
 from device import Devices, SynchronousMachine, Solar, Battery
-from CreateDERGroups import DERGroupsMessage, Payload, Header, Reply, ResponseMessage, Error, UUIDWithAttribute
+from DERGroups import DERGroups, EndDeviceGroup, EndDevice
+from message import ReplyType, ResponseMessageType, UUIDWithAttribute, HeaderType
+from ExecuteDERGroups import insertEndDeviceGroup
+from DERGroupsMessage import DERGroupsPayloadType
+
 
 conn = GridAPPSD()
 # Devices = []
@@ -56,7 +60,6 @@ def get_DERM_devices():
     pprint.pprint(results)
     results = conn.query_data(Queries.queryBattery)
     pprint.pprint(results)
-
 
 
 class GetDevicesService(ServiceBase):
@@ -94,11 +97,33 @@ class GetDevicesService(ServiceBase):
         # return {v.__class__.__name__: v.__dict__ for v in deviceList}
 
 
+class GetDERGroupsService(ServiceBase):
+
+    @rpc(_returns=DERGroups)
+    def GetDERGroups(ctx):
+        createdDERGroups = conn.query_data(Queries.queryDERGroups)
+        print(createdDERGroups)
+        groups=[]
+        for g in createdDERGroups['data']['results']['bindings']:
+            mRID = g['mRID']['value']
+            description = g['name']['value']
+            d = g['devices']['value']
+            endDevices = []
+            if d:
+                ds = d.split('\n')
+                for dd in ds:
+                    endDevices.append(EndDevice(mRID=dd))
+                print(ds)
+            newgroup = EndDeviceGroup(mRID=mRID, description=description, endDevices=endDevices)
+            groups.append(newgroup)
+        return DERGroups(endDeviceGroup=groups)
+
+
 class CreateDERGroupsService(ServiceBase):
     # __in_header__ = Header
     # __port_types__ = ['ExecuteDERGroupsPort1']
 
-    @rpc(Header, Payload, _returns=ResponseMessage, _in_variable_names={"Payload": "Payload"})
+    @rpc(HeaderType, DERGroupsPayloadType, _returns=ResponseMessageType, _in_variable_names={"Payload": "Payload"})
     # @rpc(Iterable(Unicode), Iterable(Unicode), _returns=Unicode, _in_variable_names={"Payload": "Payload"})
     def CreateDERGroups(ctx, header, payload, **kwarg):
         # aa = helpers.serialize_object(header)
@@ -109,9 +134,9 @@ class CreateDERGroupsService(ServiceBase):
         # print(kwarg)
         print(ctx)
         from pprint import pprint
-        pprint(header)#,  _in_header=xml,
+        pprint(header)  # ,  _in_header=xml,
         pprint(payload)
-        for i in payload.DERGroups:
+        for i in payload.DERGroups.EndDeviceGroup:
             print(i)
             print(i.DERFunction)
             print(i.mRID)
@@ -120,16 +145,16 @@ class CreateDERGroupsService(ServiceBase):
                 print(ii)
             for ii in i.Names:
                 print(ii)
+            # insertEndDeviceGroup(i)
 
-
-        re = ResponseMessage
+        re = ResponseMessageType
         re.Header = header
         # respond with error
         # id = UUIDWithAttribute('uuid', 'DERGroups', uuid.uuid4())
         # er = Error(6.1, 'FATAL', 'Request cancelled per business rule', id)
         # re.Reply = Reply('Failed', er)
         # respond with OK
-        re.Reply = Reply()
+        re.Reply = ReplyType()
         return re
 
 
@@ -157,6 +182,13 @@ createDERGroups = Application(
     services=[CreateDERGroupsService],
     tns='der.pnnl.gov',
     name='CreateDERGroupsService',
+    in_protocol=Soap11(validator='lxml'),
+    out_protocol=Soap11()
+)
+getDERGroups = Application(
+    services=[GetDERGroupsService],
+    tns='der.pnnl.gov',
+    name='GetDERGroupsService',
     in_protocol=Soap11(validator='lxml'),
     out_protocol=Soap11()
 )
@@ -208,18 +240,19 @@ hw = Application([HelloWorldService], 'spyne.examples.hello.soap',
             out_protocol=Soap11())
 
 from spyne.util.xml import get_schema_documents
-docs = get_schema_documents([ResponseMessage])
+docs = get_schema_documents([ResponseMessageType])
 print(docs)
 doc = docs['tns']
 print(doc)
 pprint.pprint(etree.tostring(doc, pretty_print=True))
 
-print(ResponseMessage.resolve_namespace(ResponseMessage, __name__))
+print(ResponseMessageType.resolve_namespace(ResponseMessageType, __name__))
 
 wsgi_app = WsgiMounter({
     'getDevices': getDevices,
     'createDERGroups': createDERGroups,
-    'hw': hw
+    'getDERGroups':getDERGroups,
+    # 'hw': hw
 })
 
 # application = Application(
@@ -260,6 +293,7 @@ if __name__ == '__main__':
     logging.info("listening to http://127.0.0.1:8008")
     logging.info("GetDevicesService wsdl is at: http://localhost:8008/getDevices?wsdl")
     logging.info("CreateDERGroupsService wsdl is at: http://localhost:8008/createDERGroups?wsdl")
+    logging.info("GetDERGroupsService wsdl is at: http://localhost:8008/getDERGroups?wsdl")
 
     server = make_server('127.0.0.1', 8008, wsgi_app)
     server.serve_forever()
