@@ -29,9 +29,11 @@ from gridappsd import GridAPPSD
 from gridappsd import topics as t
 from device import Devices, SynchronousMachine, Solar, Battery
 from DERGroups import DERGroups, EndDeviceGroup, EndDevice
-from message import ReplyType, ResponseMessageType, UUIDWithAttribute, HeaderType
-from ExecuteDERGroups import insertEndDeviceGroup
-from DERGroupsMessage import DERGroupsPayloadType
+from exceptions import SamemRIDException, SameGroupNameException
+from message import ReplyType, HeaderType, ResultType, ErrorType, LevelType, UUIDWithAttribute, VerbType, IDKindType
+from ExecuteDERGroupsCommands import insertEndDeviceGroup, deleteDERGroupByMrid, deleteDERGroupByName
+from DERGroupsMessage import DERGroupsPayloadType, DERGroupsResponseMessageType, DERGroupsRequestMessageType
+from datetime import datetime
 
 
 conn = GridAPPSD()
@@ -123,7 +125,7 @@ class CreateDERGroupsService(ServiceBase):
     # __in_header__ = Header
     # __port_types__ = ['ExecuteDERGroupsPort1']
 
-    @rpc(HeaderType, DERGroupsPayloadType, _returns=ResponseMessageType, _in_variable_names={"Payload": "Payload"})
+    @rpc(HeaderType, DERGroupsPayloadType, _returns=DERGroupsResponseMessageType, _in_variable_names={"Payload": "Payload"})
     # @rpc(Iterable(Unicode), Iterable(Unicode), _returns=Unicode, _in_variable_names={"Payload": "Payload"})
     def CreateDERGroups(ctx, header, payload, **kwarg):
         # aa = helpers.serialize_object(header)
@@ -132,31 +134,87 @@ class CreateDERGroupsService(ServiceBase):
         # for i in payload:
         #     print(i)
         # print(kwarg)
-        print(ctx)
-        from pprint import pprint
-        pprint(header)  # ,  _in_header=xml,
-        pprint(payload)
+        # print(ctx)
+        # from pprint import pprint
+        # pprint(header)  # ,  _in_header=xml,
+        # pprint(payload)
+        reply = ReplyType()
+        error = False
         for i in payload.DERGroups.EndDeviceGroup:
-            print(i)
-            print(i.DERFunction)
-            print(i.mRID)
-            print(i.description)
-            for ii in i.EndDevices:
-                print(ii)
-            for ii in i.Names:
-                print(ii)
-            # insertEndDeviceGroup(i)
+            # print(i)
+            # print(i.DERFunction)
+            # print(i.mRID)
+            # print(i.description)
+            # for ii in i.EndDevices:
+            #     print(ii)
+            # for ii in i.Names:
+            #     print(ii)
+            try:
+                insertEndDeviceGroup(i)
+            except SamemRIDException:
+                error = True
+                eid = UUIDWithAttribute(objectType="DERGroup", value=i.mRID, kind=IDKindType.UUID)
+            except SameGroupNameException:
+                error = True
+                eid = UUIDWithAttribute(objectType="DERGroup", value=i.description, kind=IDKindType.NAME)
 
-        re = ResponseMessageType
-        re.Header = header
-        # respond with error
-        # id = UUIDWithAttribute('uuid', 'DERGroups', uuid.uuid4())
-        # er = Error(6.1, 'FATAL', 'Request cancelled per business rule', id)
-        # re.Reply = Reply('Failed', er)
-        # respond with OK
-        re.Reply = ReplyType()
+        re = DERGroupsResponseMessageType
+        re.Header = HeaderType(verb=VerbType.REPLY, noun="DERGroups", timestamp=datetime.now(), messageID=uuid.uuid4(),
+                               correlationID=uuid.uuid4())
+        if not error:
+            reply.Result = ResultType.OK
+            reply.Error = ErrorType(code='0.0')
+        else:
+            reply.Result = ResultType.FAILED
+            reply.Error = ErrorType(code='6.1', level=LevelType.FATAL, reason='Request cancelled per business rule',
+                                        ID=eid)
+        re.Reply = reply
         return re
 
+
+class ExecuteDERGroupsService(ServiceBase):
+
+    @rpc(DERGroupsRequestMessageType, _returns=DERGroupsResponseMessageType)
+    def DeleteDERGroups(ctx, request, **kwargs):
+        groups = request.Payload.DERGroups.EndDeviceGroup
+        reply = ReplyType()
+        error = False
+        for g in groups:
+            mrid = g.mRID
+            names = g.Names
+            assert names or mrid, "Must have either name or mrid specified"
+            assert not (names and mrid), "Must have either name or mrid specified"
+            if names:
+                name = names[0]
+                try:
+                    deleteDERGroupByName(name)
+                except SameGroupNameException as ex:
+                    error = True
+                    eid = UUIDWithAttribute(objectType="DERGroup", value=name, kind=IDKindType.NAME)
+            else:
+                try:
+                    deleteDERGroupByMrid(mrid)
+                except SamemRIDException as ex:
+                    error = True
+                    eid = UUIDWithAttribute(objectType="DERGroup", value=mrid, kind=IDKindType.UUID)
+
+        re = DERGroupsResponseMessageType
+        re.Header = HeaderType(verb=VerbType.REPLY, noun="DERGroups", timestamp=datetime.now(), messageID=uuid.uuid4(),
+                               correlationID=uuid.uuid4())
+        if not error:
+            reply.Result = ResultType.OK
+            reply.Error = ErrorType(code='0.0')
+        else:
+            reply.Result = ResultType.FAILED
+            reply.Error = ErrorType(code='6.1', level=LevelType.FATAL, reason='Request cancelled per business rule',
+                                    ID=eid)
+        re.Reply = reply
+        return re
+
+
+    @rpc(HeaderType, DERGroupsPayloadType, _returns=DERGroupsResponseMessageType)
+    def ChangeDERGroups(ctx, header, paylaod, **kwargs):
+        pass
 
 # class HelloWorldService(ServiceBase):
 #     @rpc(Unicode, Integer, _returns=Iterable(Unicode))
@@ -192,67 +250,78 @@ getDERGroups = Application(
     in_protocol=Soap11(validator='lxml'),
     out_protocol=Soap11()
 )
-intr = getDevices.interface
-imports = intr.imports
+executeDERGroups =  Application(
+    services=[ExecuteDERGroupsService],
+    tns='der.pnnl.gov',
+    name='ExecuteDERGroupsService',
+    in_protocol=Soap11(validator='lxml'),
+    out_protocol=Soap11()
+)
+# intr = getDevices.interface
+# imports = intr.imports
+#
+# print('imports: ', imports)
+# tns = getDevices.interface.get_tns()
+# print('tns: ', tns)
+# smm = getDevices.interface.service_method_map
+# print('smm: ', smm)
+# print(smm['{%s}GetDevices' % tns][0].service_class)
+# print(smm['{%s}GetDevices' % tns][0].service_class == GetDevicesService)
+# print(smm['{%s}GetDevices' % tns][0].function)
+# print(smm['{%s}GetDevices' % tns][0].function == GetDevicesService.GetDevices)
+# from spyne.interface.wsdl import Wsdl11
+# wsdl = Wsdl11(intr)
+# wsdl.build_interface_document('URL')
+# wsdl_str = wsdl.get_interface_document()
+# pprint.pprint(wsdl_str)
+# wsdl_doc = etree.fromstring(wsdl_str)
+# pprint.pprint('wsdl_doc')
+# pprint.pprint(wsdl_doc)
+#
+# imports2 = createDERGroups.interface.imports
+# print('imports2: ', imports2)
+# tns2 = createDERGroups.interface.get_tns()
+# print('tns2: ', tns2)
+# smm2 = createDERGroups.interface.service_method_map
+# print('smm2: ', smm2)
+# print(smm2['{%s}CreateDERGroups' % tns2][0].service_class)
+# print(smm2['{%s}CreateDERGroups' % tns2][0].function)
+#
+# RequestStatus = Unicode(values=['new', 'processed'], zonta='bonta')
+#
+#
+# class DataRequest(ComplexModel):
+#     status = Array(RequestStatus)
+#
+#
+# class HelloWorldService(Service):
+#     @rpc(DataRequest)
+#     def some_call(ctx, dgrntcl):
+#         pass
+#
+#
+# hw = Application([HelloWorldService], 'spyne.examples.hello.soap',
+#             in_protocol=Soap11(validator='lxml'),
+#             out_protocol=Soap11())
+#
+# from spyne.util.xml import get_schema_documents
+# docs = get_schema_documents([ResponseMessageType])
+# print(docs)
+# doc = docs['tns']
+# print(doc)
+# pprint.pprint(etree.tostring(doc, pretty_print=True))
+#
+# print(ResponseMessageType.resolve_namespace(ResponseMessageType, __name__))
 
-print('imports: ', imports)
-tns = getDevices.interface.get_tns()
-print('tns: ', tns)
-smm = getDevices.interface.service_method_map
-print('smm: ', smm)
-print(smm['{%s}GetDevices' % tns][0].service_class)
-print(smm['{%s}GetDevices' % tns][0].service_class == GetDevicesService)
-print(smm['{%s}GetDevices' % tns][0].function)
-print(smm['{%s}GetDevices' % tns][0].function == GetDevicesService.GetDevices)
-from spyne.interface.wsdl import Wsdl11
-wsdl = Wsdl11(intr)
-wsdl.build_interface_document('URL')
-wsdl_str = wsdl.get_interface_document()
-pprint.pprint(wsdl_str)
-wsdl_doc = etree.fromstring(wsdl_str)
-pprint.pprint('wsdl_doc')
-pprint.pprint(wsdl_doc)
-
-imports2 = createDERGroups.interface.imports
-print('imports2: ', imports2)
-tns2 = createDERGroups.interface.get_tns()
-print('tns2: ', tns2)
-smm2 = createDERGroups.interface.service_method_map
-print('smm2: ', smm2)
-print(smm2['{%s}CreateDERGroups' % tns2][0].service_class)
-print(smm2['{%s}CreateDERGroups' % tns2][0].function)
-
-RequestStatus = Unicode(values=['new', 'processed'], zonta='bonta')
-
-
-class DataRequest(ComplexModel):
-    status = Array(RequestStatus)
-
-
-class HelloWorldService(Service):
-    @rpc(DataRequest)
-    def some_call(ctx, dgrntcl):
-        pass
-
-
-hw = Application([HelloWorldService], 'spyne.examples.hello.soap',
-            in_protocol=Soap11(validator='lxml'),
-            out_protocol=Soap11())
-
-from spyne.util.xml import get_schema_documents
-docs = get_schema_documents([ResponseMessageType])
-print(docs)
-doc = docs['tns']
-print(doc)
-pprint.pprint(etree.tostring(doc, pretty_print=True))
-
-print(ResponseMessageType.resolve_namespace(ResponseMessageType, __name__))
+wsgi_app_get_sub = WsgiMounter({
+    'getDevices': getDevices,
+    'getDERGroups': getDERGroups,
+})
 
 wsgi_app = WsgiMounter({
-    'getDevices': getDevices,
-    'createDERGroups': createDERGroups,
-    'getDERGroups':getDERGroups,
-    # 'hw': hw
+    'get': wsgi_app_get_sub,
+    'create': WsgiMounter({'executeDERGroups': createDERGroups}),
+    'change': WsgiMounter({'executeDERGroups': executeDERGroups})
 })
 
 # application = Application(
@@ -291,9 +360,11 @@ if __name__ == '__main__':
     logging.getLogger('spyne.protocol.xml').setLevel(logging.DEBUG)
 
     logging.info("listening to http://127.0.0.1:8008")
-    logging.info("GetDevicesService wsdl is at: http://localhost:8008/getDevices?wsdl")
-    logging.info("CreateDERGroupsService wsdl is at: http://localhost:8008/createDERGroups?wsdl")
-    logging.info("GetDERGroupsService wsdl is at: http://localhost:8008/getDERGroups?wsdl")
+    logging.info("GetDevicesService wsdl is at: http://localhost:8008/get/getDevices?wsdl")
+    logging.info("GetDERGroupsService wsdl is at: http://localhost:8008/get/getDERGroups?wsdl")
+    logging.info("CreateDERGroupsService wsdl is at: http://localhost:8008/create/executeDERGroups?wsdl")
+    logging.info("ExecuteDERGroupsService wsdl is at: http://localhost:8008/change/executeDERGroups?wsdl")
+
 
     server = make_server('127.0.0.1', 8008, wsgi_app)
     server.serve_forever()

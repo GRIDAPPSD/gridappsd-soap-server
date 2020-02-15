@@ -43,7 +43,7 @@ class DERGroupsResponseMessageType(ComplexModel):
     ]
 
     def __init__(self, header=None, reply=None, payload=None, **kwargs):
-        super().__init__(header, reply, payload, **kwargs)
+        super().__init__(Header=header, Reply=reply, Payload=payload, **kwargs)
         self.header = header
         self.reply = reply
         self.payload = payload

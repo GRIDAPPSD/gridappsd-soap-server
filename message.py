@@ -47,11 +47,11 @@ class UUIDWithAttribute(ComplexModel):
     # def __init__(self):
     #     super().__init__()
 
-    def __init__(self, kind=None, objectType=None, uuid=None, idType=None, idAuthority=None, **kwargs):
-        super().__init__(kind=kind, objectType=objectType, uuid=uuid, idType=idType, idAuthority=idAuthority, **kwargs)
+    def __init__(self, kind=None, objectType=None, value=None, idType=None, idAuthority=None, **kwargs):
+        super().__init__(kind=kind, objectType=objectType, value=value, idType=idType, idAuthority=idAuthority, **kwargs)
         self.kind = kind
         self.objectType = objectType
-        self.value = uuid
+        self.value = value
         self.idType = idType
         self.idAuthority = idAuthority
 
@@ -210,7 +210,7 @@ class ErrorType(ComplexModel):
     ]
 
     def __init__(self, code=None, level=None, reason=None, details=None, xpath=None, stackTrace=None, location=None, ID=None, relatedID=None, object=None, operationId=None, **kwargs):
-        super().__init__(code, level, reason, details, xpath, stackTrace, location, ID, relatedID, object, operationId, **kwargs)
+        super().__init__(code=code, level=level, reason=reason, details=details, xpath=xpath, stackTrace=stackTrace, Location=location, ID=ID, relatedID=relatedID, object=object, operationId=operationId, **kwargs)
         self.code = code
         self.level = level
         self.reason = reason
@@ -295,7 +295,7 @@ class HeaderType(ComplexModel):
     ]
 
     def __init__(self, verb=None, noun=None, revision=None, replayDetection=None, context=None, timestamp=None, source=None, asyncReplyFlag=None, replyAddress=None, ackRequired=None, user=None, messageID=None, correlationID=None, comment=None, property=None, anytypeobjs_=None, **kwargs):
-        super().__init__(verb, noun, revision, replayDetection, context, timestamp, source, asyncReplyFlag, replyAddress, ackRequired, user, messageID, correlationID, comment, property, anytypeobjs_, **kwargs)
+        super().__init__(verb=verb, Noun=noun, Revision=revision, ReplayDetection=replayDetection, Context=context, Timestamp=timestamp, Source=source, AsyncReplyFlag=asyncReplyFlag, ReplyAddress=replyAddress, AckRequired=ackRequired, User=user, MessageID=messageID, CorrelationID=correlationID, Comment=comment, Property=property, Anytypeobjs_=anytypeobjs_, **kwargs)
         self.verb = verb
         self.noun = noun
         self.revision = revision
@@ -418,7 +418,7 @@ class ReplyType(ComplexModel):
     ]
 
     def __init__(self, result=None, error=None, ID=None, anytypeobjs_=None, operationId=None, **kwargs):
-        super().__init__(result=result, error=error, ID=ID, anytypeobjs_=anytypeobjs_, operationId=operationId, **kwargs)
+        super().__init__(Result=result, Error=error, ID=ID, anytypeobjs_=anytypeobjs_, operationId=operationId, **kwargs)
         self.result = result
         if error is None:
             self.error = []
