@@ -128,6 +128,7 @@ class CreateDERGroupsService(ServiceBase):
     @rpc(HeaderType, DERGroupsPayloadType, _returns=DERGroupsResponseMessageType, _in_variable_names={"Payload": "Payload"})
     # @rpc(Iterable(Unicode), Iterable(Unicode), _returns=Unicode, _in_variable_names={"Payload": "Payload"})
     def CreateDERGroups(ctx, header, payload, **kwarg):
+        re = DERGroupsResponseMessageType
         # aa = helpers.serialize_object(header)
         # for i in header.gi_frame.f_locals['element']:
         #     print(i)
@@ -141,6 +142,9 @@ class CreateDERGroupsService(ServiceBase):
         reply = ReplyType()
         error = False
         for i in payload.DERGroups.EndDeviceGroup:
+            if not i.mRID:
+                i.mRID = str(uuid.uuid4())
+                re.Payload = payload
             # print(i)
             # print(i.DERFunction)
             # print(i.mRID)
@@ -158,7 +162,6 @@ class CreateDERGroupsService(ServiceBase):
                 error = True
                 eid = UUIDWithAttribute(objectType="DERGroup", value=i.description, kind=IDKindType.NAME)
 
-        re = DERGroupsResponseMessageType
         re.Header = HeaderType(verb=VerbType.REPLY, noun="DERGroups", timestamp=datetime.now(), messageID=uuid.uuid4(),
                                correlationID=uuid.uuid4())
         if not error:

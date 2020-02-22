@@ -103,7 +103,7 @@ class EndDeviceGroup(ComplexModel):
     infrastructure. A DERGroup and a PANDeviceGroup is an
     EndDeviceGroup."""
     _type_info = [
-        ('mRID', Uuid),
+        ('mRID', Unicode),
         ('description', Unicode),
         ('DERFunction', DERFunction),
         ('EndDevices', EndDevice.customize(max_occurs="unbounded", min_occurs=0)),

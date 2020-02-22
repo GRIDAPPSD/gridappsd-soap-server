@@ -1,26 +1,26 @@
-from DERGroups import DERGroups
-from message import OperationSet, ReplyType, RequestType, HeaderType
+from message import HeaderType
+from message import OperationSet
+from message import ReplyType
+from message import RequestType
 from spyne import ComplexModel, Unicode
 
 
 class DERGroupsPayloadType(ComplexModel):
     _type_info = [
-        ('DERGroups', DERGroups),
         ('OperationSet', OperationSet),
         ('Compressed', Unicode),
-        ('Format', Unicode)
+        ('Format', Unicode),
     ]
 
-    def __init__(self, DERGroups=None, operationSet=None, compressed=None, format=None, **kwargs):
-        super().__init__(DERGroups=DERGroups, OperationSet=operationSet, Compressed=compressed, Format=format, **kwargs)
-        self.DERGroups = DERGroups
+    def __init__(self, operationSet=None, compressed=None, format=None, **kwargs):
+        super().__init__(OperationSet=operationSet, Compressed=compressed, Format=format, **kwargs)
         self.operationSet = operationSet
         self.compressed = compressed
         self.format = format
 # end class DERGroupsPayloadType
 
 
-class DERGroupsRequestMessageType(ComplexModel):
+class DERGroupsOperationSetRequestMessageType(ComplexModel):
     _type_info = [
         ('Header', HeaderType),
         ('Request', RequestType),
@@ -32,10 +32,10 @@ class DERGroupsRequestMessageType(ComplexModel):
         self.header = header
         self.request = request
         self.payload = payload
-# end class DERGroupsRequestMessageType
+# end class DERGroupsOperationSetRequestMessageType
 
 
-class DERGroupsResponseMessageType(ComplexModel):
+class DERGroupsOperationSetResponseMessageType(ComplexModel):
     _type_info = [
         ('Header', HeaderType),
         ('Reply', ReplyType),
@@ -47,10 +47,10 @@ class DERGroupsResponseMessageType(ComplexModel):
         self.header = header
         self.reply = reply
         self.payload = payload
-# end class DERGroupsResponseMessageType
+# end class DERGroupsOperationSetResponseMessageType
 
 
-class DERGroupsEventMessageType(ComplexModel):
+class DERGroupsOperationSetEventMessageType(ComplexModel):
     _type_info = [
         ('Header', HeaderType),
         ('Payload', DERGroupsPayloadType),
@@ -60,10 +60,10 @@ class DERGroupsEventMessageType(ComplexModel):
         super().__init__(Header=header, Payload=payload, **kwargs)
         self.header = header
         self.payload = payload
-# end class DERGroupsEventMessageType
+# end class DERGroupsOperationSetEventMessageType
 
 
-class DERGroupsFaultMessageType(ComplexModel):
+class DERGroupsOperationSetFaultMessageType(ComplexModel):
     _type_info = [
         ('Reply', ReplyType),
     ]
@@ -71,4 +71,4 @@ class DERGroupsFaultMessageType(ComplexModel):
     def __init__(self, reply=None, **kwargs):
         super().__init__(Reply=reply, **kwargs)
         self.reply = reply
-# end class DERGroupsFaultMessageType
+# end class DERGroupsOperationSetFaultMessageType
