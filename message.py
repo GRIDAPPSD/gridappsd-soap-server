@@ -168,7 +168,7 @@ class Name(ComplexModel):
     ]
 
     def __init__(self, name=None, nameType=None, **kwargs):
-        super().__init__(name, nameType, **kwargs)
+        super().__init__(name=name, nameType=nameType, **kwargs)
         self.name = name
         self.NameType = nameType
 # end class Name

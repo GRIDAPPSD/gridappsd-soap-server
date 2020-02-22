@@ -30,7 +30,7 @@ from gridappsd import topics as t
 from device import Devices, SynchronousMachine, Solar, Battery
 from DERGroups import DERGroups, EndDeviceGroup, EndDevice
 from exceptions import SamemRIDException, SameGroupNameException
-from message import ReplyType, HeaderType, ResultType, ErrorType, LevelType, UUIDWithAttribute, VerbType, IDKindType
+from message import ReplyType, HeaderType, ResultType, ErrorType, LevelType, UUIDWithAttribute, VerbType, IDKindType, Name
 from ExecuteDERGroupsCommands import insertEndDeviceGroup, deleteDERGroupByMrid, deleteDERGroupByName
 from DERGroupsMessage import DERGroupsPayloadType, DERGroupsResponseMessageType, DERGroupsRequestMessageType
 from datetime import datetime
@@ -108,7 +108,10 @@ class GetDERGroupsService(ServiceBase):
         groups=[]
         for g in createdDERGroups['data']['results']['bindings']:
             mRID = g['mRID']['value']
-            description = g['name']['value']
+            description = None
+            if 'description' in g:
+                description = g['description']['value']
+            name = g['names']['value']
             d = g['devices']['value']
             endDevices = []
             if d:
@@ -116,7 +119,12 @@ class GetDERGroupsService(ServiceBase):
                 for dd in ds:
                     endDevices.append(EndDevice(mRID=dd))
                 print(ds)
-            newgroup = EndDeviceGroup(mRID=mRID, description=description, endDevices=endDevices)
+            names = []
+            if name:
+                nm = name.split('\n')
+                for nn in nm:
+                    names.append(Name(name=nn))
+            newgroup = EndDeviceGroup(mRID=mRID, description=description, endDevices=endDevices, names=names)
             groups.append(newgroup)
         return DERGroups(endDeviceGroup=groups)
 

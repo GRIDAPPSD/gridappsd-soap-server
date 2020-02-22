@@ -188,16 +188,19 @@ queryDERGroups = """#get all EndDeviceGroup
 PREFIX  xsd:  <http://www.w3.org/2001/XMLSchema#>
 PREFIX  r:    <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
 PREFIX  c:    <http://iec.ch/TC57/CIM100#>
-select ?mRID ?name (group_concat(distinct ?device;separator="\\n") as ?devices) where {
+select ?mRID ?description (group_concat(distinct ?device;separator="\\n") as ?devices) (group_concat(distinct ?name;separator="\\n") as ?names) where {
   ?q1 a c:EndDeviceGroup .
   ?q1 c:IdentifiedObject.mRID ?mRIDraw .
   bind(strafter(str(?mRIDraw), "_") as ?mRID).
   ?q1 c:IdentifiedObject.name ?name .
   Optional{
   	?q1 c:EndDevice ?deviceraw .
-  	bind(strafter(str(?deviceraw), "_") as ?device).
+   	bind(strafter(str(?deviceraw), "_") as ?device) .
+  }
+  Optional{
+    ?q1 c:IdentifiedObject.description ?description .
   }
 }
-Group by ?mRID ?name
-Order by ?name
+Group by ?mRID ?description
+Order by ?mRID
 """

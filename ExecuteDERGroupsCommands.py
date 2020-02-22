@@ -53,11 +53,14 @@ def insertEndDeviceGroup(endDeviceGroup):
         mRIDStr = '_' + mRIDStr
 
     checkmRIDExists(mRIDStr)
-    checkNameExists(endDeviceGroup.description)
+    #checkNameExists(endDeviceGroup.description)
 
     group = '<' + blazegraph_url + '#' + mRIDStr + '>'
 
-    q += group + ' a c:EndDeviceGroup .' + group + ' c:IdentifiedObject.mRID \"' + mRIDStr + '\" . ' + group + ' c:IdentifiedObject.name \"' + endDeviceGroup.description + '\" . '
+    q += group + ' a c:EndDeviceGroup .' + group + ' c:IdentifiedObject.mRID \"' + mRIDStr + '\" . ' + group + ' c:IdentifiedObject.description \"' + endDeviceGroup.description + '\" . '
+
+    for name in endDeviceGroup.Names:
+        q += group + ' c:IdentifiedObject.name \"' + name.name + '\" . '
 
     for device in endDeviceGroup.EndDevices:
         deviceID = str(device.mRID)
