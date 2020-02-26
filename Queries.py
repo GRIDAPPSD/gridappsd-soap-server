@@ -113,7 +113,6 @@ ORDER by ?name
 # """
 
 
-
 queryBattery = """# Storage - DistStorage
 PREFIX r:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
 PREFIX c:  <http://iec.ch/TC57/CIM100#>
@@ -188,19 +187,42 @@ queryDERGroups = """#get all EndDeviceGroup
 PREFIX  xsd:  <http://www.w3.org/2001/XMLSchema#>
 PREFIX  r:    <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
 PREFIX  c:    <http://iec.ch/TC57/CIM100#>
-select ?mRID ?description (group_concat(distinct ?device;separator="\\n") as ?devices) (group_concat(distinct ?name;separator="\\n") as ?names) where {
+select ?mRID ?description (group_concat(distinct ?name;separator="\\n") as ?names) 
+ 						  (group_concat(distinct ?device;separator="\\n") as ?devices) 
+where {
   ?q1 a c:EndDeviceGroup .
   ?q1 c:IdentifiedObject.mRID ?mRIDraw .
-  bind(strafter(str(?mRIDraw), "_") as ?mRID).
+    bind(strafter(str(?mRIDraw), "_") as ?mRID).
   ?q1 c:IdentifiedObject.name ?name .
+  ?q1 c:IdentifiedObject.description ?description .
   Optional{
-  	?q1 c:EndDevice ?deviceraw .
-   	bind(strafter(str(?deviceraw), "_") as ?device) .
-  }
-  Optional{
-    ?q1 c:IdentifiedObject.description ?description .
+  	?q1 c:EndDeviceGroup.EndDevice ?deviceobj .
+    ?deviceobj c:IdentifiedObject.mRID ?deviceID .
+    ?deviceobj c:IdentifiedObject.name ?deviceName .
+    ?deviceobj c:EndDevice.isSmartInverter ?isSmart .
+    bind(concat(strafter(str(?deviceID), "_"), ", ", str(?deviceName), ", ", str(?isSmart)) as ?device)
   }
 }
 Group by ?mRID ?description
 Order by ?mRID
+"""
+
+queryEndDevices = """
+PREFIX r: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX c: <http://iec.ch/TC57/CIM100#>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+SELECT ?name ?mrid ?issmart ?upoint ?upoint
+WHERE {
+  ?s a c:EndDevice .
+  ?s c:IdentifiedObject.name ?name .
+  ?s c:IdentifiedObject.mRID ?rawmrid .
+    bind(strafter(str(?rawmrid),"_") as ?mrid)
+  ?s c:EndDevice.isSmartInverter ?issmart .
+  ?s c:EndDevice.UsagePoint ?upraw .
+    bind(strafter(str(?upraw),"#_") as ?upoint)
+  #?upraw c:IdentifiedObject.name ?upointName .
+  #?upraw c:IdentifiedObject.mRID ?upointID .
+  #  bind(strafter(str(?upointID),"_") as ?upoint2)
+}
+ORDER by ?name
 """

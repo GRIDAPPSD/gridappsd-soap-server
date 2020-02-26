@@ -77,7 +77,7 @@ class EndDevice(ComplexModel):
     ]
 
     def __init__(self, mRID=None, names=None, **kwargs):
-        super().__init__(mRID, names, **kwargs)
+        super().__init__(mRID=mRID, Names=names, **kwargs)
         self.mRID = mRID
         if names is None:
             self.names = []

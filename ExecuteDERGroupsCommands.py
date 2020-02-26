@@ -66,7 +66,8 @@ def insertEndDeviceGroup(endDeviceGroup):
         deviceID = str(device.mRID)
         if deviceID[0] != '_':
             deviceID = '_' + deviceID
-        q += group + ' c:EndDevice \"' + deviceID + '\" .'
+        dv = '<' + blazegraph_url + '#' + deviceID + '>'
+        q += group + ' c:EndDeviceGroup.EndDevice ' + dv + ' .'
 
     # Update query
     q += '}'

@@ -27,7 +27,9 @@ from spyne.server.wsgi import WsgiApplication
 from spyne.util.wsgi_wrapper import WsgiMounter
 from gridappsd import GridAPPSD
 from gridappsd import topics as t
-from device import Devices, SynchronousMachine, Solar, Battery
+
+from device import Device
+from equipment import Equipments, SynchronousMachine, Solar, Battery
 from DERGroups import DERGroups, EndDeviceGroup, EndDevice
 from exceptions import SamemRIDException, SameGroupNameException
 from message import ReplyType, HeaderType, ResultType, ErrorType, LevelType, UUIDWithAttribute, VerbType, IDKindType, Name
@@ -67,36 +69,36 @@ def get_DERM_devices():
 class GetDevicesService(ServiceBase):
     # __port_types__ = ['ExecuteDERGroupsPort']
 
-    @rpc(_returns=Devices)
+    @rpc(_returns=Array(Device))
     def GetDevices(ctx):
-        synchronousMachine = conn.query_data(Queries.querySynchronousMachine)
-        solar = conn.query_data(Queries.querySolar)
-        battery = conn.query_data(Queries.queryBattery)
-        syndeviceList = []
-        slrdeviceList = []
-        bttrydeviceList = []
-        for r in synchronousMachine['data']['results']['bindings']:
-            d = SynchronousMachine(r['name']['value'], r['bus']['value'], r['ratedS']['value'], r['ratedU']['value'], r['p']['value'], r['q']['value'], r['id']['value'], r['fdrid']['value'], r['phases']['value'])
-            syndeviceList.append(d)
-        for r in solar['data']['results']['bindings']:
-            d = Solar(r['name']['value'], r['bus']['value'], r['ratedS']['value'], r['ratedU']['value'], r['ipu']['value'], r['p']['value'], r['q']['value'], r['id']['value'], r['fdrid']['value'], r['phases']['value'])
-            slrdeviceList.append(d)
-        for r in battery['data']['results']['bindings']:
-            d = Battery(r['name']['value'], r['bus']['value'], r['ratedS']['value'], r['ratedU']['value'], r['ipu']['value'], r['ratedE']['value'], r['storedE']['value'], r['state']['value'], r['p']['value'], r['q']['value'], r['id']['value'], r['fdrid']['value'], r['phases']['value'])
-            bttrydeviceList.append(d)
-        # pprint.pprint(results)
-        # print(type(results))
-        # print(len(results))
-        # r = util.etreeconv.root_dict_to_etree({'r':results})
-        # print(r)
-        # return util.etreeconv.root_dict_to_etree({'a': 1})
-        # return {'SynchronousMachine': synchronousMachine, 'Solar': solar, 'Battery': battery}
-        return Devices(syndeviceList, slrdeviceList, bttrydeviceList)
-        # return synchronousMachine
-        # return json.dumps(deviceList)
-        # return [o.__dict__ for o in deviceList]
-        # s = {v.name: v.__dict__ for v in deviceList}
-        # return {v.__class__.__name__: v.__dict__ for v in deviceList}
+        devices = conn.query_data(Queries.queryEndDevices)
+        deviceList = []
+        for d in devices['data']['results']['bindings']:
+            print(d)
+            isSmartInverter = d['issmart']['value']
+            if isSmartInverter == 'True':
+                smart = True
+            else:
+                smart = False
+            dd = Device(name=d['name']['value'], mRID=d['mrid']['value'], isSmartInverter=smart, usagePoint=d['upoint']['value'])
+            deviceList.append(dd)
+        return deviceList
+        # synchronousMachine = conn.query_data(Queries.queryEndDevices)
+        # solar = conn.query_data(Queries.querySolar)
+        # battery = conn.query_data(Queries.queryBattery)
+        # syndeviceList = []
+        # slrdeviceList = []
+        # bttrydeviceList = []
+        # for r in synchronousMachine['data']['results']['bindings']:
+        #     d = SynchronousMachine(r['name']['value'], r['bus']['value'], r['ratedS']['value'], r['ratedU']['value'], r['p']['value'], r['q']['value'], r['id']['value'], r['fdrid']['value'], r['phases']['value'])
+        #     syndeviceList.append(d)
+        # for r in solar['data']['results']['bindings']:
+        #     d = Solar(r['name']['value'], r['bus']['value'], r['ratedS']['value'], r['ratedU']['value'], r['ipu']['value'], r['p']['value'], r['q']['value'], r['id']['value'], r['fdrid']['value'], r['phases']['value'])
+        #     slrdeviceList.append(d)
+        # for r in battery['data']['results']['bindings']:
+        #     d = Battery(r['name']['value'], r['bus']['value'], r['ratedS']['value'], r['ratedU']['value'], r['ipu']['value'], r['ratedE']['value'], r['storedE']['value'], r['state']['value'], r['p']['value'], r['q']['value'], r['id']['value'], r['fdrid']['value'], r['phases']['value'])
+        #     bttrydeviceList.append(d)
+        # return Equipments(syndeviceList, slrdeviceList, bttrydeviceList)
 
 
 class GetDERGroupsService(ServiceBase):
@@ -117,7 +119,10 @@ class GetDERGroupsService(ServiceBase):
             if d:
                 ds = d.split('\n')
                 for dd in ds:
-                    endDevices.append(EndDevice(mRID=dd))
+                    ids = dd.split(',')
+                    # edNames=[]
+                    # edNames.append(Name(name=ids[1]))
+                    endDevices.append(EndDevice(mRID=ids[0], names=[Name(name=ids[1])], isSmart=ids[2]))
                 print(ds)
             names = []
             if name:
@@ -126,7 +131,11 @@ class GetDERGroupsService(ServiceBase):
                     names.append(Name(name=nn))
             newgroup = EndDeviceGroup(mRID=mRID, description=description, endDevices=endDevices, names=names)
             groups.append(newgroup)
-        return DERGroups(endDeviceGroup=groups)
+        if groups:
+            return DERGroups(endDeviceGroup=groups)
+        else:
+            return DERGroups(endDeviceGroup=None)
+
 
 
 class CreateDERGroupsService(ServiceBase):
