@@ -30,7 +30,7 @@ from gridappsd import topics as t
 
 from device import Device
 from equipment import Equipments, SynchronousMachine, Solar, Battery
-from DERGroups import DERGroups, EndDeviceGroup, EndDevice
+from DERGroups import DERGroups, EndDeviceGroup, EndDevice, DERFunction
 from exceptions import SamemRIDException, SameGroupNameException
 from message import ReplyType, HeaderType, ResultType, ErrorType, LevelType, UUIDWithAttribute, VerbType, IDKindType, Name
 from ExecuteDERGroupsCommands import insertEndDeviceGroup, deleteDERGroupByMrid, deleteDERGroupByName
@@ -129,7 +129,26 @@ class GetDERGroupsService(ServiceBase):
                 nm = name.split('\n')
                 for nn in nm:
                     names.append(Name(name=nn))
-            newgroup = EndDeviceGroup(mRID=mRID, description=description, endDevices=endDevices, names=names)
+            f = g['funcs']['value']
+            funcs = dict()
+            if f:
+                fs = f.split('\n')
+                for ff in fs:
+                    func = ff.split(',')
+                    if func[1] == 'true':
+                        funcs[func[0]]=True
+                    else:
+                        funcs[func[0]]=False
+                derfunc = DERFunction(connectDisconnect=funcs['connectDisconnect'],
+                         frequencyWattCurveFunction=funcs['frequencyWattCurveFunction'],
+                         maxRealPowerLimiting=funcs['maxRealPowerLimiting'],
+                         rampRateControl=funcs['rampRateControl'],
+                         reactivePowerDispatch=funcs['reactivePowerDispatch'],
+                         realPowerDispatch=funcs['realPowerDispatch'],
+                         voltageRegulation=funcs['voltageRegulation'],
+                         voltVarCurveFunction=funcs['voltVarCurveFunction'],
+                         voltWattCurveFunction=funcs['voltWattCurveFunction'])
+            newgroup = EndDeviceGroup(mRID=mRID, description=description, endDevices=endDevices, names=names, DERFunction=derfunc)
             groups.append(newgroup)
         if groups:
             return DERGroups(endDeviceGroup=groups)
@@ -146,30 +165,12 @@ class CreateDERGroupsService(ServiceBase):
     # @rpc(Iterable(Unicode), Iterable(Unicode), _returns=Unicode, _in_variable_names={"Payload": "Payload"})
     def CreateDERGroups(ctx, header, payload, **kwarg):
         re = DERGroupsResponseMessageType
-        # aa = helpers.serialize_object(header)
-        # for i in header.gi_frame.f_locals['element']:
-        #     print(i)
-        # for i in payload:
-        #     print(i)
-        # print(kwarg)
-        # print(ctx)
-        # from pprint import pprint
-        # pprint(header)  # ,  _in_header=xml,
-        # pprint(payload)
         reply = ReplyType()
         error = False
         for i in payload.DERGroups.EndDeviceGroup:
             if not i.mRID:
                 i.mRID = str(uuid.uuid4())
                 re.Payload = payload
-            # print(i)
-            # print(i.DERFunction)
-            # print(i.mRID)
-            # print(i.description)
-            # for ii in i.EndDevices:
-            #     print(ii)
-            # for ii in i.Names:
-            #     print(ii)
             try:
                 insertEndDeviceGroup(i)
             except SamemRIDException:
@@ -178,6 +179,10 @@ class CreateDERGroupsService(ServiceBase):
             except SameGroupNameException:
                 error = True
                 eid = UUIDWithAttribute(objectType="DERGroup", value=i.description, kind=IDKindType.NAME)
+            except Exception as ex:
+                error = True
+                eid = UUIDWithAttribute(objectType="DERGroup")
+                print(ex)
 
         re.Header = HeaderType(verb=VerbType.REPLY, noun="DERGroups", timestamp=datetime.now(), messageID=uuid.uuid4(),
                                correlationID=uuid.uuid4())

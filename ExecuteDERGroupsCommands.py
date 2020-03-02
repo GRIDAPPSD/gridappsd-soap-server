@@ -1,3 +1,5 @@
+import uuid
+
 from SPARQLWrapper import SPARQLWrapper2
 
 # URL from outside the docker container:
@@ -7,9 +9,9 @@ blazegraph_url = "http://localhost:8889/bigdata/sparql"
 
 cim100 = '<http://iec.ch/TC57/CIM100#'
 # Prefix for all queries.
-prefix = """PREFIX r: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
-PREFIX c: {cimURL}>
-PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+prefix = """PREFIX r:<http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX c:{cimURL}>
+PREFIX xsd:<http://www.w3.org/2001/XMLSchema#>
 """.format(cimURL=cim100)
 
 sparql = SPARQLWrapper2(blazegraph_url)
@@ -44,8 +46,12 @@ def checkNameExists(name):
 
 
 
-def insertEndDeviceGroup(endDeviceGroup):
+def insertEndDeviceGroup(endDeviceGroup): #need to figure out how to put DER Functions into blazegraph too.
+    '''
 
+    :param endDeviceGroup:
+    :return:
+    '''
     q = (prefix + 'INSERT DATA { ')
     mRIDStr = str(endDeviceGroup.mRID)
     # Need an underscore on the ID.
@@ -57,7 +63,7 @@ def insertEndDeviceGroup(endDeviceGroup):
 
     group = '<' + blazegraph_url + '#' + mRIDStr + '>'
 
-    q += group + ' a c:EndDeviceGroup .' + group + ' c:IdentifiedObject.mRID \"' + mRIDStr + '\" . ' + group + ' c:IdentifiedObject.description \"' + endDeviceGroup.description + '\" . '
+    q += group + ' a c:EndDeviceGroup . ' + group + ' c:IdentifiedObject.mRID \"' + mRIDStr + '\" . ' + group + ' c:IdentifiedObject.description \"' + endDeviceGroup.description + '\" . '
 
     for name in endDeviceGroup.Names:
         q += group + ' c:IdentifiedObject.name \"' + name.name + '\" . '
@@ -67,7 +73,21 @@ def insertEndDeviceGroup(endDeviceGroup):
         if deviceID[0] != '_':
             deviceID = '_' + deviceID
         dv = '<' + blazegraph_url + '#' + deviceID + '>'
-        q += group + ' c:EndDeviceGroup.EndDevice ' + dv + ' .'
+        q += group + ' c:EndDeviceGroup.EndDevice ' + dv + ' . '
+
+    derFunction = '<' + blazegraph_url + '#_' + str(uuid.uuid4()) + '>'
+    q += group + ' c:DERFunction ' + derFunction + ' . '
+    q += derFunction + ' a c:DERFunction . '
+    q += derFunction + ' c:DERFunction.connectDisconnect ' + str(endDeviceGroup.DERFunction.connectDisconnect).lower() + ' . '
+    q += derFunction + ' c:DERFunction.frequencyWattCurveFunction ' + str(endDeviceGroup.DERFunction.frequencyWattCurveFunction).lower() + ' . '
+    q += derFunction + ' c:DERFunction.maxRealPowerLimiting ' + str(endDeviceGroup.DERFunction.maxRealPowerLimiting).lower() + ' . '
+    q += derFunction + ' c:DERFunction.rampRateControl ' + str(endDeviceGroup.DERFunction.rampRateControl).lower() + ' . '
+    q += derFunction + ' c:DERFunction.reactivePowerDispatch ' + str(endDeviceGroup.DERFunction.reactivePowerDispatch).lower() + ' . '
+    q += derFunction + ' c:DERFunction.realPowerDispatch ' + str(endDeviceGroup.DERFunction.realPowerDispatch).lower() + ' . '
+    q += derFunction + ' c:DERFunction.voltageRegulation ' + str(endDeviceGroup.DERFunction.voltageRegulation).lower() + ' . '
+    q += derFunction + ' c:DERFunction.voltVarCurveFunction ' + str(endDeviceGroup.DERFunction.voltVarCurveFunction).lower() + ' . '
+    q += derFunction + ' c:DERFunction.voltWattCurveFunction ' + str(endDeviceGroup.DERFunction.voltWattCurveFunction).lower() + ' . '
+
 
     # Update query
     q += '}'
@@ -104,7 +124,10 @@ def deleteDERGroupByMrid(mrid):
 
     q = (prefix + 'DELETE Where{ ' +
          '?group c:IdentifiedObject.mRID \"' + mrid + '\" ; ' +
-         '?property ?value . ')
+         '?property ?value ; ' +
+         'c:DERFunction ?func . ' +
+         '?func ?property2 ?value2 .'
+         )
 
     # Update query
     q += '}'

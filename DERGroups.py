@@ -19,9 +19,15 @@ class DERFunction(ComplexModel):
     def __init__(self, connectDisconnect=None, frequencyWattCurveFunction=None, maxRealPowerLimiting=None,
                  rampRateControl=None, reactivePowerDispatch=None, realPowerDispatch=None, voltageRegulation=None,
                  voltVarCurveFunction=None, voltWattCurveFunction=None, **kwargs):
-        super().__init__(connectDisconnect, frequencyWattCurveFunction, maxRealPowerLimiting, rampRateControl,
-                         reactivePowerDispatch, realPowerDispatch, voltageRegulation, voltVarCurveFunction,
-                         voltWattCurveFunction, **kwargs)
+        super().__init__(connectDisconnect=connectDisconnect,
+                         frequencyWattCurveFunction=frequencyWattCurveFunction,
+                         maxRealPowerLimiting=maxRealPowerLimiting,
+                         rampRateControl=rampRateControl,
+                         reactivePowerDispatch=reactivePowerDispatch,
+                         realPowerDispatch=realPowerDispatch,
+                         voltageRegulation=voltageRegulation,
+                         voltVarCurveFunction=voltVarCurveFunction,
+                         voltWattCurveFunction=voltWattCurveFunction, **kwargs)
         self.connectDisconnect = connectDisconnect
         self.frequencyWattCurveFunction = frequencyWattCurveFunction
         self.maxRealPowerLimiting = maxRealPowerLimiting
