@@ -168,7 +168,7 @@ class Name(ComplexModel):
     ]
 
     def __init__(self, name=None, nameType=None, **kwargs):
-        super().__init__(name=name, nameType=nameType, **kwargs)
+        super().__init__(name=name, NameType=nameType, **kwargs)
         self.name = name
         self.NameType = nameType
 # end class Name
@@ -295,7 +295,7 @@ class HeaderType(ComplexModel):
     ]
 
     def __init__(self, verb=None, noun=None, revision=None, replayDetection=None, context=None, timestamp=None, source=None, asyncReplyFlag=None, replyAddress=None, ackRequired=None, user=None, messageID=None, correlationID=None, comment=None, property=None, anytypeobjs_=None, **kwargs):
-        super().__init__(verb=verb, Noun=noun, Revision=revision, ReplayDetection=replayDetection, Context=context, Timestamp=timestamp, Source=source, AsyncReplyFlag=asyncReplyFlag, ReplyAddress=replyAddress, AckRequired=ackRequired, User=user, MessageID=messageID, CorrelationID=correlationID, Comment=comment, Property=property, Anytypeobjs_=anytypeobjs_, **kwargs)
+        super().__init__(Verb=verb, Noun=noun, Revision=revision, ReplayDetection=replayDetection, Context=context, Timestamp=timestamp, Source=source, AsyncReplyFlag=asyncReplyFlag, ReplyAddress=replyAddress, AckRequired=ackRequired, User=user, MessageID=messageID, CorrelationID=correlationID, Comment=comment, Property=property, Anytypeobjs_=anytypeobjs_, **kwargs)
         self.verb = verb
         self.noun = noun
         self.revision = revision
@@ -336,7 +336,7 @@ class OperationType(ComplexModel):
     ]
 
     def __init__(self, operationId=None, noun=None, verb=None, elementOperation=False, anytypeobjs_=None, **kwargs):
-        super().__init__(operationId, noun, verb, elementOperation, anytypeobjs_, **kwargs)
+        super().__init__(operationId=operationId, noun=noun, verb=verb, elementOperation=elementOperation, anytypeobjs_=anytypeobjs_, **kwargs)
         self.operationId = operationId
         self.noun = noun
         self.verb = verb

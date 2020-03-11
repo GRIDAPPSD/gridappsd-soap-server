@@ -1,11 +1,11 @@
 from spyne import ComplexModel, Unicode, Iterable, Uuid, Array, Boolean
+import jsons,json
 
 
 class Device(ComplexModel):
     '''
     represents an end device
     '''
-    __type_name__ = 'mRID'
     _type_info = [
         ('mRID', Unicode),  # XmlData(Uuid)
         ('name', Unicode),
@@ -19,3 +19,9 @@ class Device(ComplexModel):
         self.name = name
         self.isSmartInverter = isSmartInverter
         self.usagePoint = usagePoint
+
+    # def __json__(self):
+    #     return json.dumps({"mRID": self.mRID,
+    #                        "name": self.name,
+    #                        "isSmartInverter": self.isSmartInverter,
+    #                        "usagePoint": self.usagePoint})

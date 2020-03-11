@@ -20,7 +20,8 @@ from lxml import etree
 
 # from spyne import Application, ServiceBase, Unicode, rpc
 
-from spyne import Application, Service, ComplexModel, rpc, ServiceBase, Iterable, Integer, Unicode, util, xml, AnyXml, Array, AnyDict
+from spyne import Application, Service, ComplexModel, rpc, ServiceBase, Iterable, Integer, Unicode, util, xml, AnyXml, \
+    Array, AnyDict
 
 from spyne.protocol.soap import Soap11
 from spyne.server.wsgi import WsgiApplication
@@ -32,13 +33,18 @@ from device import Device
 from equipment import Equipments, SynchronousMachine, Solar, Battery
 from DERGroups import DERGroups, EndDeviceGroup, EndDevice, DERFunction
 from exceptions import SamemRIDException, SameGroupNameException
-from message import ReplyType, HeaderType, ResultType, ErrorType, LevelType, UUIDWithAttribute, VerbType, IDKindType, Name
+from message import ReplyType, HeaderType, ResultType, ErrorType, LevelType, UUIDWithAttribute, VerbType, IDKindType, \
+    Name
 from ExecuteDERGroupsCommands import insertEndDeviceGroup, deleteDERGroupByMrid, deleteDERGroupByName
 from DERGroupsMessage import DERGroupsPayloadType, DERGroupsResponseMessageType, DERGroupsRequestMessageType
 from datetime import datetime
-
+from DERGroupQueries import DERGroupQueries
+from DERGroupQueriesMessage import DERGroupQueriesResponseMessageType, DERGroupQueriesRequestType, \
+    DERGroupQueriesPayloadType
 
 conn = GridAPPSD()
+
+
 # Devices = []
 
 
@@ -66,6 +72,29 @@ def get_DERM_devices():
     pprint.pprint(results)
 
 
+def _build_response_header(verb):
+    '''
+    create message header
+    :param verb: string. create, change, delete execute, get , reply, etc.
+    :param message_id: string. UUID
+    :param correlation_id: string. UUID
+    :return: json string as the header
+    '''
+
+    return HeaderType(verb=verb, noun="DERGroups", timestamp=datetime.now(), messageID=uuid.uuid4(),
+                      correlationID=uuid.uuid4())
+
+
+def _build_reply(result, errorCode, errorLevel=None, reason=None):
+    reply = ReplyType()
+    reply.Result = result
+    if errorLevel:
+        reply.Error = ErrorType(code=errorCode)
+    else:
+        reply.Error = ErrorType(code=errorCode, level=errorLevel, reason=reason)
+    return reply
+
+
 class GetDevicesService(ServiceBase):
     # __port_types__ = ['ExecuteDERGroupsPort']
 
@@ -80,7 +109,8 @@ class GetDevicesService(ServiceBase):
                 smart = True
             else:
                 smart = False
-            dd = Device(name=d['name']['value'], mRID=d['mrid']['value'], isSmartInverter=smart, usagePoint=d['upoint']['value'])
+            dd = Device(name=d['name']['value'], mRID=d['mrid']['value'], isSmartInverter=smart,
+                        usagePoint=d['upoint']['value'])
             deviceList.append(dd)
         return deviceList
         # synchronousMachine = conn.query_data(Queries.queryEndDevices)
@@ -101,67 +131,68 @@ class GetDevicesService(ServiceBase):
         # return Equipments(syndeviceList, slrdeviceList, bttrydeviceList)
 
 
-class GetDERGroupsService(ServiceBase):
-
-    @rpc(_returns=DERGroups)
-    def GetDERGroups(ctx):
-        createdDERGroups = conn.query_data(Queries.queryDERGroups)
-        print(createdDERGroups)
-        groups=[]
-        for g in createdDERGroups['data']['results']['bindings']:
-            mRID = g['mRID']['value']
-            description = None
-            if 'description' in g:
-                description = g['description']['value']
-            name = g['names']['value']
-            d = g['devices']['value']
-            endDevices = []
-            if d:
-                ds = d.split('\n')
-                for dd in ds:
-                    ids = dd.split(',')
-                    # edNames=[]
-                    # edNames.append(Name(name=ids[1]))
-                    endDevices.append(EndDevice(mRID=ids[0], names=[Name(name=ids[1])], isSmart=ids[2]))
-                print(ds)
-            names = []
-            if name:
-                nm = name.split('\n')
-                for nn in nm:
-                    names.append(Name(name=nn))
-            f = g['funcs']['value']
-            funcs = dict()
-            if f:
-                fs = f.split('\n')
-                for ff in fs:
-                    func = ff.split(',')
-                    if func[1] == 'true':
-                        funcs[func[0]]=True
-                    else:
-                        funcs[func[0]]=False
-                derfunc = DERFunction(connectDisconnect=funcs['connectDisconnect'],
-                         frequencyWattCurveFunction=funcs['frequencyWattCurveFunction'],
-                         maxRealPowerLimiting=funcs['maxRealPowerLimiting'],
-                         rampRateControl=funcs['rampRateControl'],
-                         reactivePowerDispatch=funcs['reactivePowerDispatch'],
-                         realPowerDispatch=funcs['realPowerDispatch'],
-                         voltageRegulation=funcs['voltageRegulation'],
-                         voltVarCurveFunction=funcs['voltVarCurveFunction'],
-                         voltWattCurveFunction=funcs['voltWattCurveFunction'])
-            newgroup = EndDeviceGroup(mRID=mRID, description=description, endDevices=endDevices, names=names, DERFunction=derfunc)
-            groups.append(newgroup)
-        if groups:
-            return DERGroups(endDeviceGroup=groups)
-        else:
-            return DERGroups(endDeviceGroup=None)
-
+# class GetDERGroupsService(ServiceBase):
+#
+#     @rpc(_returns=DERGroups)
+#     def GetDERGroups(ctx):
+#         createdDERGroups = conn.query_data(Queries.queryAllDERGroups)
+#         print(createdDERGroups)
+#         groups = []
+#         for g in createdDERGroups['data']['results']['bindings']:
+#             mRID = g['mRID']['value']
+#             description = None
+#             if 'description' in g:
+#                 description = g['description']['value']
+#             name = g['names']['value']
+#             d = g['devices']['value']
+#             endDevices = []
+#             if d:
+#                 ds = d.split('\n')
+#                 for dd in ds:
+#                     ids = dd.split(',')
+#                     # edNames=[]
+#                     # edNames.append(Name(name=ids[1]))
+#                     endDevices.append(EndDevice(mRID=ids[0], names=[Name(name=ids[1])], isSmart=ids[2]))
+#                 print(ds)
+#             names = []
+#             if name:
+#                 nm = name.split('\n')
+#                 for nn in nm:
+#                     names.append(Name(name=nn))
+#             f = g['funcs']['value']
+#             funcs = dict()
+#             if f:
+#                 fs = f.split('\n')
+#                 for ff in fs:
+#                     func = ff.split(',')
+#                     if func[1] == 'true':
+#                         funcs[func[0]] = True
+#                     else:
+#                         funcs[func[0]] = False
+#                 derfunc = DERFunction(connectDisconnect=funcs['connectDisconnect'],
+#                                       frequencyWattCurveFunction=funcs['frequencyWattCurveFunction'],
+#                                       maxRealPowerLimiting=funcs['maxRealPowerLimiting'],
+#                                       rampRateControl=funcs['rampRateControl'],
+#                                       reactivePowerDispatch=funcs['reactivePowerDispatch'],
+#                                       realPowerDispatch=funcs['realPowerDispatch'],
+#                                       voltageRegulation=funcs['voltageRegulation'],
+#                                       voltVarCurveFunction=funcs['voltVarCurveFunction'],
+#                                       voltWattCurveFunction=funcs['voltWattCurveFunction'])
+#             newgroup = EndDeviceGroup(mRID=mRID, description=description, endDevices=endDevices, names=names,
+#                                       DERFunction=derfunc)
+#             groups.append(newgroup)
+#         if groups:
+#             return DERGroups(endDeviceGroup=groups)
+#         else:
+#             return DERGroups(endDeviceGroup=None)
 
 
 class CreateDERGroupsService(ServiceBase):
     # __in_header__ = Header
     # __port_types__ = ['ExecuteDERGroupsPort1']
 
-    @rpc(HeaderType, DERGroupsPayloadType, _returns=DERGroupsResponseMessageType, _in_variable_names={"Payload": "Payload"})
+    @rpc(HeaderType, DERGroupsPayloadType, _returns=DERGroupsResponseMessageType,
+         _in_variable_names={"Payload": "Payload"})
     # @rpc(Iterable(Unicode), Iterable(Unicode), _returns=Unicode, _in_variable_names={"Payload": "Payload"})
     def CreateDERGroups(ctx, header, payload, **kwarg):
         re = DERGroupsResponseMessageType
@@ -192,7 +223,7 @@ class CreateDERGroupsService(ServiceBase):
         else:
             reply.Result = ResultType.FAILED
             reply.Error = ErrorType(code='6.1', level=LevelType.FATAL, reason='Request cancelled per business rule',
-                                        ID=eid)
+                                    ID=eid)
         re.Reply = reply
         return re
 
@@ -224,8 +255,7 @@ class ExecuteDERGroupsService(ServiceBase):
                     eid = UUIDWithAttribute(objectType="DERGroup", value=mrid, kind=IDKindType.UUID)
 
         re = DERGroupsResponseMessageType
-        re.Header = HeaderType(verb=VerbType.REPLY, noun="DERGroups", timestamp=datetime.now(), messageID=uuid.uuid4(),
-                               correlationID=uuid.uuid4())
+        re.Header = _build_response_header(VerbType.REPLY)
         if not error:
             reply.Result = ResultType.OK
             reply.Error = ErrorType(code='0.0')
@@ -236,10 +266,108 @@ class ExecuteDERGroupsService(ServiceBase):
         re.Reply = reply
         return re
 
-
     @rpc(HeaderType, DERGroupsPayloadType, _returns=DERGroupsResponseMessageType)
     def ChangeDERGroups(ctx, header, paylaod, **kwargs):
         pass
+
+
+class QueryDERGroupsService(ServiceBase):
+    @rpc(HeaderType, DERGroupQueriesRequestType, _returns=DERGroupQueriesResponseMessageType)
+    def QueryDERGroups(ctx, Header=None, Request=None, **kwargs):
+        print(Header)
+        print(Request)
+        names = []
+        mRIDs = []
+        for group in Request.DERGroupQueries.EndDeviceGroup:
+            if group:
+                if group.Names:
+                    for name in group.Names:
+                        names.append(name.name)
+                        print(name.name)
+                elif group.mRID:
+                    mRIDs.append(str(group.mRID))
+                    print(group.mRID)
+        if names:
+            # b = "\"" + "\" \"".join(names) + "\""
+            query = Queries.queryDERGroupsByName.format(groupnames="\"" + "\" \"".join(names) + "\"")
+        if mRIDs:
+            query = Queries.queryDERGroupsBymRID.format(mRIDs="\"" + "\" \"".join(mRIDs) + "\"")
+        if not names and not mRIDs:
+            query = Queries.queryAllDERGroups
+        success = False
+        try:
+            groups = conn.query_data(query)
+            success = True
+        except Exception as e:
+            pass
+        re = DERGroupQueriesResponseMessageType
+        reheader = _build_response_header(VerbType.REPLY)
+        re.Header = reheader
+        if success:
+            payload = QueryDERGroupsService.build_response_payload(groups)
+            reply = _build_reply(ResultType.OK, '0.0')
+        else:
+            payload = None
+            reply = _build_reply(ResultType.FAILED, '6.1')
+        re.Payload = payload
+        re.Reply = reply
+        return re
+
+    @staticmethod
+    def build_response_payload(groups):
+        endgroups = []
+        for g in groups['data']['results']['bindings']:
+            mRID = None
+            if 'mRID' in g:
+                mRID = g['mRID']['value']
+            description = None
+            if 'description' in g:
+                description = g['description']['value']
+            names = g['names']['value']
+            name = []
+            if names:
+                nms = names.split('\n')
+                for nm in nms:
+                    name.append(Name(name=nm))
+            devices = g['devices']['value']
+            endDevices = []
+            if devices:
+                dvcs = devices.split('\n')
+                for dd in dvcs:
+                    ids = dd.split(',')
+                    endDevices.append(EndDevice(mRID=ids[0], names=[Name(name=ids[1])], isSmart=ids[2]))
+            funcs = g['funcs']['value']
+            derfuncs = dict()
+            if funcs:
+                fs = funcs.split('\n')
+                for ff in fs:
+                    func = ff.split(',')
+                    if func[1] == 'true':
+                        derfuncs[func[0]] = True
+                    else:
+                        derfuncs[func[0]] = False
+                derfunc = DERFunction(connectDisconnect=derfuncs['connectDisconnect'],
+                                      frequencyWattCurveFunction=derfuncs['frequencyWattCurveFunction'],
+                                      maxRealPowerLimiting=derfuncs['maxRealPowerLimiting'],
+                                      rampRateControl=derfuncs['rampRateControl'],
+                                      reactivePowerDispatch=derfuncs['reactivePowerDispatch'],
+                                      realPowerDispatch=derfuncs['realPowerDispatch'],
+                                      voltageRegulation=derfuncs['voltageRegulation'],
+                                      voltVarCurveFunction=derfuncs['voltVarCurveFunction'],
+                                      voltWattCurveFunction=derfuncs['voltWattCurveFunction'])
+            else:
+                derfunc = None
+            newgroup = EndDeviceGroup(mRID=mRID, description=description, endDevices=endDevices, names=name,
+                                  DERFunction=derfunc)
+            endgroups.append(newgroup)
+        if endgroups:
+            dergroups = DERGroups(endDeviceGroup=endgroups)
+        else:
+            dergroups = DERGroups(endDeviceGroup=None)
+
+        re = DERGroupQueriesPayloadType(dERGroups=dergroups)
+        return re
+
 
 # class HelloWorldService(ServiceBase):
 #     @rpc(Unicode, Integer, _returns=Iterable(Unicode))
@@ -268,17 +396,24 @@ createDERGroups = Application(
     in_protocol=Soap11(validator='lxml'),
     out_protocol=Soap11()
 )
-getDERGroups = Application(
-    services=[GetDERGroupsService],
-    tns='der.pnnl.gov',
-    name='GetDERGroupsService',
-    in_protocol=Soap11(validator='lxml'),
-    out_protocol=Soap11()
-)
-executeDERGroups =  Application(
+# getDERGroups = Application(
+#     services=[GetDERGroupsService],
+#     tns='der.pnnl.gov',
+#     name='GetDERGroupsService',
+#     in_protocol=Soap11(validator='lxml'),
+#     out_protocol=Soap11()
+# )
+executeDERGroups = Application(
     services=[ExecuteDERGroupsService],
     tns='der.pnnl.gov',
     name='ExecuteDERGroupsService',
+    in_protocol=Soap11(validator='lxml'),
+    out_protocol=Soap11()
+)
+queryDERGroups = Application(
+    services=[QueryDERGroupsService],
+    tns='der.pnnl.gov',
+    name='QueryDERGroupsService',
     in_protocol=Soap11(validator='lxml'),
     out_protocol=Soap11()
 )
@@ -340,7 +475,8 @@ executeDERGroups =  Application(
 
 wsgi_app_get_sub = WsgiMounter({
     'getDevices': getDevices,
-    'getDERGroups': getDERGroups,
+    # 'getDERGroups': getDERGroups,
+    'queryDERGroups': queryDERGroups
 })
 
 wsgi_app = WsgiMounter({
@@ -386,10 +522,10 @@ if __name__ == '__main__':
 
     logging.info("listening to http://127.0.0.1:8008")
     logging.info("GetDevicesService wsdl is at: http://localhost:8008/get/getDevices?wsdl")
-    logging.info("GetDERGroupsService wsdl is at: http://localhost:8008/get/getDERGroups?wsdl")
+    # logging.info("GetDERGroupsService wsdl is at: http://localhost:8008/get/getDERGroups?wsdl")
     logging.info("CreateDERGroupsService wsdl is at: http://localhost:8008/create/executeDERGroups?wsdl")
     logging.info("ExecuteDERGroupsService wsdl is at: http://localhost:8008/change/executeDERGroups?wsdl")
-
+    logging.info("QueryDERGroupsService wsdl is at: http://localhost:8008/get/queryDERGroups?wsdl")
 
     server = make_server('127.0.0.1', 8008, wsgi_app)
     server.serve_forever()

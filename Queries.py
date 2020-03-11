@@ -183,7 +183,7 @@ ORDER by ?name
 # """
 
 
-queryDERGroups = """#get all EndDeviceGroup
+queryAllDERGroups = """#get all EndDeviceGroup
 PREFIX  xsd:  <http://www.w3.org/2001/XMLSchema#>
 PREFIX  r:    <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
 PREFIX  c:    <http://iec.ch/TC57/CIM100#>
@@ -211,6 +211,69 @@ where {
 Group by ?mRID ?description
 Order by ?mRID
 """
+
+
+queryDERGroupsByName = """#get all EndDeviceGroup
+PREFIX  xsd:  <http://www.w3.org/2001/XMLSchema#>
+PREFIX  r:    <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX  c:    <http://iec.ch/TC57/CIM100#>
+select ?mRID ?description (group_concat(distinct ?name;separator="\\n") as ?names) 
+ 						  (group_concat(distinct ?device;separator="\\n") as ?devices)
+ 						  (group_concat(distinct ?func;separator="\\n") as ?funcs) 
+where {{
+  ?q1 a c:EndDeviceGroup .
+  ?q1 c:IdentifiedObject.mRID ?mRIDraw .
+    bind(strafter(str(?mRIDraw), "_") as ?mRID).
+  ?q1 c:IdentifiedObject.name ?name .
+  VALUES ?name {{{groupnames}}}
+  ?q1 c:IdentifiedObject.description ?description .
+  Optional{{
+  	?q1 c:EndDeviceGroup.EndDevice ?deviceobj .
+    ?deviceobj c:IdentifiedObject.mRID ?deviceID .
+    ?deviceobj c:IdentifiedObject.name ?deviceName .
+    ?deviceobj c:EndDevice.isSmartInverter ?isSmart .
+    bind(concat(strafter(str(?deviceID), "_"), ",", str(?deviceName), ",", str(?isSmart)) as ?device)
+  }}
+  ?q1 c:DERFunction ?derFunc .
+  ?derFunc ?pfunc ?vfuc .
+  Filter(?pfunc !=r:type)
+    bind(concat(strafter(str(?pfunc), "DERFunction."), ",", str(?vfuc)) as ?func)
+}}
+Group by ?mRID ?description
+Order by ?mRID
+"""
+
+
+queryDERGroupsBymRID = """#get all EndDeviceGroup
+PREFIX  xsd:  <http://www.w3.org/2001/XMLSchema#>
+PREFIX  r:    <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX  c:    <http://iec.ch/TC57/CIM100#>
+select ?mRID ?description (group_concat(distinct ?name;separator="\\n") as ?names) 
+ 						  (group_concat(distinct ?device;separator="\\n") as ?devices)
+ 						  (group_concat(distinct ?func;separator="\\n") as ?funcs) 
+where {{
+  ?q1 a c:EndDeviceGroup .
+  ?q1 c:IdentifiedObject.mRID ?mRIDraw .
+    bind(strafter(str(?mRIDraw), "_") as ?mRID).
+  VALUES ?mRID {{{mRIDs}}}
+  ?q1 c:IdentifiedObject.name ?name .
+  ?q1 c:IdentifiedObject.description ?description .
+  Optional{{
+  	?q1 c:EndDeviceGroup.EndDevice ?deviceobj .
+    ?deviceobj c:IdentifiedObject.mRID ?deviceID .
+    ?deviceobj c:IdentifiedObject.name ?deviceName .
+    ?deviceobj c:EndDevice.isSmartInverter ?isSmart .
+    bind(concat(strafter(str(?deviceID), "_"), ",", str(?deviceName), ",", str(?isSmart)) as ?device)
+  }}
+  ?q1 c:DERFunction ?derFunc .
+  ?derFunc ?pfunc ?vfuc .
+  Filter(?pfunc !=r:type)
+    bind(concat(strafter(str(?pfunc), "DERFunction."), ",", str(?vfuc)) as ?func)
+}}
+Group by ?mRID ?description
+Order by ?mRID
+"""
+
 
 queryEndDevices = """
 PREFIX r: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
