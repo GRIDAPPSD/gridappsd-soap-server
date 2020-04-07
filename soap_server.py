@@ -35,7 +35,7 @@ from DERGroups import DERGroups, EndDeviceGroup, EndDevice, DERFunction
 from exceptions import SamemRIDException, SameGroupNameException
 from message import ReplyType, HeaderType, ResultType, ErrorType, LevelType, UUIDWithAttribute, VerbType, IDKindType, \
     Name
-from ExecuteDERGroupsCommands import insertEndDeviceGroup, deleteDERGroupByMrid, deleteDERGroupByName
+from ExecuteDERGroupsCommands import insertEndDeviceGroup, deleteDERGroupByMrid, deleteDERGroupByName, modifyDERGroup
 from DERGroupsMessage import DERGroupsPayloadType, DERGroupsResponseMessageType, DERGroupsRequestMessageType
 from datetime import datetime
 from DERGroupQueries import DERGroupQueries
@@ -194,14 +194,14 @@ class CreateDERGroupsService(ServiceBase):
     @rpc(HeaderType, DERGroupsPayloadType, _returns=DERGroupsResponseMessageType,
          _in_variable_names={"Payload": "Payload"})
     # @rpc(Iterable(Unicode), Iterable(Unicode), _returns=Unicode, _in_variable_names={"Payload": "Payload"})
-    def CreateDERGroups(ctx, header, payload, **kwarg):
+    def CreateDERGroups(ctx, Header=None, Payload=None, **kwarg):
         re = DERGroupsResponseMessageType
         reply = ReplyType()
         error = False
-        for i in payload.DERGroups.EndDeviceGroup:
+        for i in Payload.DERGroups.EndDeviceGroup:
             if not i.mRID:
                 i.mRID = str(uuid.uuid4())
-                re.Payload = payload
+                re.Payload = Payload
             try:
                 insertEndDeviceGroup(i)
             except SamemRIDException:
@@ -230,9 +230,9 @@ class CreateDERGroupsService(ServiceBase):
 
 class ExecuteDERGroupsService(ServiceBase):
 
-    @rpc(DERGroupsRequestMessageType, _returns=DERGroupsResponseMessageType)
-    def DeleteDERGroups(ctx, request, **kwargs):
-        groups = request.Payload.DERGroups.EndDeviceGroup
+    @rpc(HeaderType, DERGroupsPayloadType, _returns=DERGroupsResponseMessageType)
+    def DeleteDERGroups(ctx, Header=None, Payload=None, **kwargs):
+        groups = Payload.DERGroups.EndDeviceGroup
         reply = ReplyType()
         error = False
         for g in groups:
@@ -243,8 +243,8 @@ class ExecuteDERGroupsService(ServiceBase):
             if names:
                 name = names[0]
                 try:
-                    deleteDERGroupByName(name)
-                except SameGroupNameException as ex:
+                    deleteDERGroupByName(name.name)
+                except Exception as ex:
                     error = True
                     eid = UUIDWithAttribute(objectType="DERGroup", value=name, kind=IDKindType.NAME)
             else:
@@ -267,8 +267,32 @@ class ExecuteDERGroupsService(ServiceBase):
         return re
 
     @rpc(HeaderType, DERGroupsPayloadType, _returns=DERGroupsResponseMessageType)
-    def ChangeDERGroups(ctx, header, paylaod, **kwargs):
-        pass
+    def ChangeDERGroups(ctx, Header=None, Payload=None, **kwargs):
+        print(Header)
+        print(Payload)
+        error = False
+        reply = ReplyType()
+
+        if Payload.DERGroups.EndDeviceGroup:
+            group = Payload.DERGroups.EndDeviceGroup[0]
+
+        try:
+            modifyDERGroup(group)
+        except Exception as ex:
+            error = True
+            # eid = UUIDWithAttribute(objectType="DERGroup")
+
+        re = DERGroupsResponseMessageType
+        re.Header = _build_response_header(VerbType.REPLY)
+
+        if not error:
+            reply.Result = ResultType.OK
+            reply.Error = ErrorType(code='0.0')
+        else:
+            reply.Result = ResultType.FAILED
+            reply.Error = ErrorType(code='6.1', level=LevelType.FATAL, reason='Request cancelled per business rule')
+        re.Reply = reply
+        return re
 
 
 class QueryDERGroupsService(ServiceBase):
@@ -278,15 +302,16 @@ class QueryDERGroupsService(ServiceBase):
         print(Request)
         names = []
         mRIDs = []
-        for group in Request.DERGroupQueries.EndDeviceGroup:
-            if group:
-                if group.Names:
-                    for name in group.Names:
-                        names.append(name.name)
-                        print(name.name)
-                elif group.mRID:
-                    mRIDs.append(str(group.mRID))
-                    print(group.mRID)
+        if Request.DERGroupQueries.EndDeviceGroup:
+            for group in Request.DERGroupQueries.EndDeviceGroup:
+                if group:
+                    if group.Names:
+                        for name in group.Names:
+                            names.append(name.name)
+                            print(name.name)
+                    elif group.mRID:
+                        mRIDs.append(str(group.mRID))
+                        print(group.mRID)
         if names:
             # b = "\"" + "\" \"".join(names) + "\""
             query = Queries.queryDERGroupsByName.format(groupnames="\"" + "\" \"".join(names) + "\"")
