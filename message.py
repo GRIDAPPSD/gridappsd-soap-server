@@ -34,6 +34,48 @@ VerbType = Enum('CANCEL', 'CANCELED', 'CHANGE', 'CHANGED', 'CREATE', 'CREATED', 
 LevelType = Enum('INFORM', 'WARNING', 'FATAL', 'CATASTROPHIC', type_name='LevelType')
 
 
+# class IDKindType(Enum):
+#     """ID Kind Type"""
+#     NAME='name'
+#     UUID='uuid'
+#     TRANSACTION='transaction'
+#     OTHER='other'
+#
+#
+# class ResultType(Enum):
+#     """Reply code: OK, PARTIAL or FAILED"""
+#     OK='OK'
+#     PARTIAL='PARTIAL'
+#     FAILED='FAILED'
+#
+#
+# class VerbType(Enum):
+#     """This enumerated list of verbs that can be used to form message types in
+#     compliance with the IEC 61968 standard."""
+#     CANCEL='cancel'
+#     CANCELED='canceled'
+#     CHANGE='change'
+#     CHANGED='changed'
+#     CREATE='create'
+#     CREATED='created'
+#     CLOSE='close'
+#     CLOSED='closed'
+#     DELETE='delete'
+#     DELETED='deleted'
+#     GET='get'
+#     REPLY='reply'
+#     EXECUTE='execute'
+#     EXECUTED='executed'
+#
+#
+# class levelType(Enum):
+#     """Severity level, e.g. INFORM, WARNING, FATAL, CATASTROPHIC"""
+#     INFORM='INFORM'
+#     WARNING='WARNING'
+#     FATAL='FATAL'
+#     CATASTROPHIC='CATASTROPHIC'
+
+
 class UUIDWithAttribute(ComplexModel):
     __type_name__ = 'ID'
     _type_info = [
