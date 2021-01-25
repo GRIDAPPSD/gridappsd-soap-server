@@ -279,7 +279,7 @@ queryEndDevices = """
 PREFIX r: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
 PREFIX c: <http://iec.ch/TC57/CIM100#>
 PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
-SELECT ?name ?mrid ?issmart ?upoint ?upoint
+SELECT ?name ?mrid ?issmart ?upoint #?upoint
 WHERE {
   ?s a c:EndDevice .
   ?s c:IdentifiedObject.name ?name .

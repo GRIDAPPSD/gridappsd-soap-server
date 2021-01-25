@@ -41,9 +41,10 @@ from datetime import datetime
 from DERGroupQueries import DERGroupQueries
 from DERGroupQueriesMessage import DERGroupQueriesResponseMessageType, DERGroupQueriesRequestType, \
     DERGroupQueriesPayloadType
+from DERGroupStatusQueriesMessage import DERGroupStatusQueriesResponseMessageType, DERGroupStatusQueriesRequestType
 
 conn = GridAPPSD()
-
+# conn.subscribe()
 
 # Devices = []
 
@@ -394,6 +395,15 @@ class QueryDERGroupsService(ServiceBase):
         return re
 
 
+class QueryDERGroupStatusesService(ServiceBase):
+    @rpc(HeaderType, DERGroupStatusQueriesRequestType, _returns=DERGroupStatusQueriesResponseMessageType)
+    def QueryDERGroupStatuses(ctx, Header=None, Request=None, **kwargs):
+        print(Header)
+        print(Request)
+        re = DERGroupStatusQueriesResponseMessageType
+        return re
+
+
 # class HelloWorldService(ServiceBase):
 #     @rpc(Unicode, Integer, _returns=Iterable(Unicode))
 #     def say_hello(ctx, name, times):
@@ -439,6 +449,13 @@ queryDERGroups = Application(
     services=[QueryDERGroupsService],
     tns='der.pnnl.gov',
     name='QueryDERGroupsService',
+    in_protocol=Soap11(validator='lxml'),
+    out_protocol=Soap11()
+)
+queryDERGroupStatuses = Application(
+    services=[QueryDERGroupStatusesService],
+    tns='der.pnnl.gov',
+    name='QueryDERGroupStatusesService',
     in_protocol=Soap11(validator='lxml'),
     out_protocol=Soap11()
 )
@@ -501,7 +518,8 @@ queryDERGroups = Application(
 wsgi_app_get_sub = WsgiMounter({
     'getDevices': getDevices,
     # 'getDERGroups': getDERGroups,
-    'queryDERGroups': queryDERGroups
+    'queryDERGroups': queryDERGroups,
+    'queryDERGroupStatuses': queryDERGroupStatuses
 })
 
 wsgi_app = WsgiMounter({
@@ -551,6 +569,7 @@ if __name__ == '__main__':
     logging.info("CreateDERGroupsService wsdl is at: http://localhost:8008/create/executeDERGroups?wsdl")
     logging.info("ExecuteDERGroupsService wsdl is at: http://localhost:8008/change/executeDERGroups?wsdl")
     logging.info("QueryDERGroupsService wsdl is at: http://localhost:8008/get/queryDERGroups?wsdl")
+    logging.info("QueryDERGroupStatusesService wsdl is at: http://localhost:8008/get/queryDERGroupStatuses?wsdl")
 
     server = make_server('127.0.0.1', 8008, wsgi_app)
     server.serve_forever()
