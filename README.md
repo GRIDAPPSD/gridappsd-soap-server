@@ -1,3 +1,3 @@
 # gridappsd-soap-server
 
-![DERMS Test Application](derms_app.png)
+![DERMS Test Application](doc/derms_app.png)
