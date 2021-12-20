@@ -1,5 +1,5 @@
 #!/bin/bash
-rm ieee123_pv_*.csv
+rm transactive_*.csv
 rm *.txt
 rm go.sh
 rm -rf csv

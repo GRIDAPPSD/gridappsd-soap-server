@@ -1,0 +1,6 @@
+transactive_*.csv
+Transactive_*.txt
+go.sh
+csv/
+dss/
+glm/
