@@ -6,7 +6,7 @@ Copyright (c) 2017-2021, Battelle Memorial Institute
 
 The archived files include:
 
-1. The CIM XML and UUID files are in _Transactive.xml_ and _ttransactive_uuids.dat_. The CIM measurement UUID values are maintained in _Transactive_msid.json_
+1. The CIM XML and UUID files are in _Transactive.xml_ and _transactive_uuids.dat_. The CIM measurement UUID values are maintained in _Transactive_msid.json_
 2. The original OpenDSS model files are in _*.dss_, with map coordinates in _Buscoords.csv_
 
 ## Process
