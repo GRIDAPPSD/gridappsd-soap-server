@@ -17,7 +17,7 @@ cwd = os.getcwd()
 cases = [
   {'root':froot, 'mRID':'503D6E20-F499-4CC7-8051-971E23D0BF79','glmvsrc': 2400.00,'bases':[4160.0],
    'export_options':' -l=1.0 -z=1.0 -e=carson',
-   'check_branches':[{'dss_link': 'LINE.L114', 'dss_bus': '135', 'gld_link': 'LINE_L114', 'gld_bus': '135'}]},
+   'check_branches':[{'dss_link': 'LINE.LINE_L114', 'dss_bus': 'NODE_135', 'gld_link': 'LINE_LINE_L114', 'gld_bus': 'NODE_135'}]},
   ]
 
 # create the CIM XML and base case solution from GridAPPS-D's model
