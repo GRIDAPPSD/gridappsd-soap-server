@@ -1,0 +1,14 @@
+!Regulator Definitions:
+
+new transformer.reg_reg4_A bank=vreg1 phases=1 numtaps=32.0 wdg=1 kva=100000 kv=2.4 bus=node_160.1 wdg=2 kva=100000 kv=2.4 bus=node_160r.1
+new regcontrol.reg_reg4_regA transformer=reg_reg4_A winding=2 ptratio=20.000000 vreg=120 band=2 delay=30
+new transformer.reg_reg4_B bank=vreg1 phases=1 numtaps=32.0 wdg=1 kva=100000 kv=2.4 bus=node_160.2 wdg=2 kva=100000 kv=2.4 bus=node_160r.2
+new regcontrol.reg_reg4_regB transformer=reg_reg4_B winding=2 ptratio=20.000000 vreg=120 band=2 delay=30
+new transformer.reg_reg4_C bank=vreg1 phases=1 numtaps=32.0 wdg=1 kva=100000 kv=2.4 bus=node_160.3 wdg=2 kva=100000 kv=2.4 bus=node_160r.3
+new regcontrol.reg_reg4_regC transformer=reg_reg4_C winding=2 ptratio=20.000000 vreg=120 band=2 delay=30
+new transformer.reg_reg3_A bank=vreg2 phases=1 numtaps=32.0 wdg=1 kva=100000 kv=2.4 bus=node_25.1 wdg=2 kva=100000 kv=2.4 bus=node_25r.1
+new regcontrol.reg_reg3_regA transformer=reg_reg3_A winding=2 ptratio=20.000000 vreg=120 band=2 delay=30
+new transformer.reg_reg3_C bank=vreg2 phases=1 numtaps=32.0 wdg=1 kva=100000 kv=2.4 bus=node_25.3 wdg=2 kva=100000 kv=2.4 bus=node_25r.3
+new regcontrol.reg_reg3_regC transformer=reg_reg3_C winding=2 ptratio=20.000000 vreg=120 band=2 delay=30
+new transformer.reg_reg2_A bank=vreg3 phases=1 numtaps=32.0 wdg=1 kva=100000 kv=2.4 bus=node_9.1 wdg=2 kva=100000 kv=2.4 bus=node_9r.1
+new regcontrol.reg_reg2_regA transformer=reg_reg2_A winding=2 ptratio=20.000000 vreg=120 band=2 delay=30

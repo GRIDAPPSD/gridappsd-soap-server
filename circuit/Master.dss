@@ -1,0 +1,36 @@
+clear
+redirect VSource.dss
+set earthmodel=carson
+redirect Capacitors.dss
+redirect CapControls.dss
+redirect Switches.dss
+redirect LineCodes.dss
+redirect OverheadLines.dss
+redirect TpxLineCodes.dss
+redirect TriplexLines.dss
+redirect Transformers.dss
+redirect TpxLoads.dss
+redirect Regulators.dss
+redirect Jumpers.dss
+set voltagebases="4.16,0.48,0.208"
+calcv
+buscoords Buscoords.csv
+batchedit load..* model=1 // 1=P, 2=Z, 5=I
+AddBusMarker Bus=node_150 code=34 color=Green size=5
+set markcapacitors=yes
+set capmarkercode=38
+set capmarkersize=1
+set markfuses=no
+set fusemarkercode=12
+set markreclosers=yes
+set reclosermarkercode=26
+set reclosermarkersize=2
+set markregulators=yes
+set regmarkercode=34
+set regmarkersize=1
+set markswitches=no
+set switchmarkercode=12
+set marktransformers=no
+set transmarkercode=25
+set transmarkersize=1
+set DaisySize=1.0

@@ -1,0 +1,124 @@
+! Transformer Definitions
+new xfmrcode.xfcode_xcon_reg1a windings=2 phases=3
+	~ %loadloss=0.000 xhl=0.001
+	~ wdg=1 conn=wye kva=5000.000 kv=2.402
+	~ wdg=2 conn=wye kva=5000.000 kv=2.402
+new xfmrcode.xfcode_xcon_xfm1 windings=2 phases=3
+	~ %loadloss=1.270 xhl=2.7199999999999998
+	~ wdg=1 conn=delta kva=150.000 kv=2.402
+	~ wdg=2 conn=delta kva=150.000 kv=0.277
+new xfmrcode.xfcode_xcon_ct50 windings=3 phases=1
+	~ %noloadloss=0.200 %imag=0.500
+	~ xhl=1.958 xht=1.958 xlt=1.306
+	~ wdg=1 conn=wye kva=50.000 kv=2.400 %R=0.300
+	~ wdg=2 conn=wye kva=50.000 kv=.120 %R=0.600
+	~ wdg=3 conn=wye kva=50.000 kv=.120 %R=0.600
+new xfmrcode.xfcode_xcon_ct100 windings=3 phases=1
+	~ %noloadloss=0.200 %imag=0.500
+	~ xhl=1.958 xht=1.958 xlt=1.306
+	~ wdg=1 conn=wye kva=100.000 kv=2.400 %R=0.300
+	~ wdg=2 conn=wye kva=100.000 kv=.120 %R=0.600
+	~ wdg=3 conn=wye kva=100.000 kv=.120 %R=0.600
+new xfmrcode.xfcode_xcon_ct25 windings=3 phases=1
+	~ %noloadloss=0.200 %imag=0.500
+	~ xhl=1.958 xht=1.958 xlt=1.306
+	~ wdg=1 conn=wye kva=25.000 kv=2.400 %R=0.300
+	~ wdg=2 conn=wye kva=25.000 kv=.120 %R=0.600
+	~ wdg=3 conn=wye kva=25.000 kv=.120 %R=0.600
+new transformer.transformer_xf_reg1a xfmrcode=xfcode_xcon_reg1a buses=[node_150.1.2.3 node_150r.1.2.3]
+new transformer.transformer_xf_xfm1 xfmrcode=xfcode_xcon_xfm1 buses=[node_61s.1.2.3 node_610.1.2.3]
+new transformer.transformer_xf_xfs_node_1_a xfmrcode=xfcode_xcon_ct100 buses=[node_1.1 s_node_1_a.1.0 s_node_1_a.0.2]
+new transformer.transformer_xf_xfs_node_2_b xfmrcode=xfcode_xcon_ct100 buses=[node_2.2 s_node_2_b.1.0 s_node_2_b.0.2]
+new transformer.transformer_xf_xfs_node_4_c xfmrcode=xfcode_xcon_ct100 buses=[node_4.3 s_node_4_c.1.0 s_node_4_c.0.2]
+new transformer.transformer_xf_xfs_node_5_c xfmrcode=xfcode_xcon_ct100 buses=[node_5.3 s_node_5_c.1.0 s_node_5_c.0.2]
+new transformer.transformer_xf_xfs_node_6_c xfmrcode=xfcode_xcon_ct100 buses=[node_6.3 s_node_6_c.1.0 s_node_6_c.0.2]
+new transformer.transformer_xf_xfs_node_7_a xfmrcode=xfcode_xcon_ct100 buses=[node_7.1 s_node_7_a.1.0 s_node_7_a.0.2]
+new transformer.transformer_xf_xfs_node_9_a xfmrcode=xfcode_xcon_ct100 buses=[node_9.1 s_node_9_a.1.0 s_node_9_a.0.2]
+new transformer.transformer_xf_xfs_node_10_a xfmrcode=xfcode_xcon_ct100 buses=[node_10.1 s_node_10_a.1.0 s_node_10_a.0.2]
+new transformer.transformer_xf_xfs_node_11_a xfmrcode=xfcode_xcon_ct100 buses=[node_11.1 s_node_11_a.1.0 s_node_11_a.0.2]
+new transformer.transformer_xf_xfs_node_12_b xfmrcode=xfcode_xcon_ct100 buses=[node_12.2 s_node_12_b.1.0 s_node_12_b.0.2]
+new transformer.transformer_xf_xfs_node_16_c xfmrcode=xfcode_xcon_ct100 buses=[node_16.3 s_node_16_c.1.0 s_node_16_c.0.2]
+new transformer.transformer_xf_xfs_node_17_c xfmrcode=xfcode_xcon_ct100 buses=[node_17.3 s_node_17_c.1.0 s_node_17_c.0.2]
+new transformer.transformer_xf_xfs_node_19_a xfmrcode=xfcode_xcon_ct100 buses=[node_19.1 s_node_19_a.1.0 s_node_19_a.0.2]
+new transformer.transformer_xf_xfs_node_20_a xfmrcode=xfcode_xcon_ct100 buses=[node_20.1 s_node_20_a.1.0 s_node_20_a.0.2]
+new transformer.transformer_xf_xfs_node_22_b xfmrcode=xfcode_xcon_ct100 buses=[node_22.2 s_node_22_b.1.0 s_node_22_b.0.2]
+new transformer.transformer_xf_xfs_node_24_c xfmrcode=xfcode_xcon_ct100 buses=[node_24.3 s_node_24_c.1.0 s_node_24_c.0.2]
+new transformer.transformer_xf_xfs_node_28_a xfmrcode=xfcode_xcon_ct100 buses=[node_28.1 s_node_28_a.1.0 s_node_28_a.0.2]
+new transformer.transformer_xf_xfs_node_29_a xfmrcode=xfcode_xcon_ct100 buses=[node_29.1 s_node_29_a.1.0 s_node_29_a.0.2]
+new transformer.transformer_xf_xfs_node_30_c xfmrcode=xfcode_xcon_ct100 buses=[node_30.3 s_node_30_c.1.0 s_node_30_c.0.2]
+new transformer.transformer_xf_xfs_node_31_c xfmrcode=xfcode_xcon_ct100 buses=[node_31.3 s_node_31_c.1.0 s_node_31_c.0.2]
+new transformer.transformer_xf_xfs_node_32_c xfmrcode=xfcode_xcon_ct100 buses=[node_32.3 s_node_32_c.1.0 s_node_32_c.0.2]
+new transformer.transformer_xf_xfs_node_33_a xfmrcode=xfcode_xcon_ct100 buses=[node_33.1 s_node_33_a.1.0 s_node_33_a.0.2]
+new transformer.transformer_xf_xfs_node_34_c xfmrcode=xfcode_xcon_ct100 buses=[node_34.3 s_node_34_c.1.0 s_node_34_c.0.2]
+new transformer.transformer_xf_xfs_node_35_a xfmrcode=xfcode_xcon_ct100 buses=[node_35.1 s_node_35_a.1.0 s_node_35_a.0.2]
+new transformer.transformer_xf_xfs_node_37_a xfmrcode=xfcode_xcon_ct100 buses=[node_37.1 s_node_37_a.1.0 s_node_37_a.0.2]
+new transformer.transformer_xf_xfs_node_38_b xfmrcode=xfcode_xcon_ct100 buses=[node_38.2 s_node_38_b.1.0 s_node_38_b.0.2]
+new transformer.transformer_xf_xfs_node_39_b xfmrcode=xfcode_xcon_ct100 buses=[node_39.2 s_node_39_b.1.0 s_node_39_b.0.2]
+new transformer.transformer_xf_xfs_node_41_c xfmrcode=xfcode_xcon_ct100 buses=[node_41.3 s_node_41_c.1.0 s_node_41_c.0.2]
+new transformer.transformer_xf_xfs_node_42_a xfmrcode=xfcode_xcon_ct100 buses=[node_42.1 s_node_42_a.1.0 s_node_42_a.0.2]
+new transformer.transformer_xf_xfs_node_43_b xfmrcode=xfcode_xcon_ct100 buses=[node_43.2 s_node_43_b.1.0 s_node_43_b.0.2]
+new transformer.transformer_xf_xfs_node_45_a xfmrcode=xfcode_xcon_ct100 buses=[node_45.1 s_node_45_a.1.0 s_node_45_a.0.2]
+new transformer.transformer_xf_xfs_node_46_a xfmrcode=xfcode_xcon_ct100 buses=[node_46.1 s_node_46_a.1.0 s_node_46_a.0.2]
+new transformer.transformer_xf_xfs_node_47_a xfmrcode=xfcode_xcon_ct100 buses=[node_47.1 s_node_47_a.1.0 s_node_47_a.0.2]
+new transformer.transformer_xf_xfs_node_47_b xfmrcode=xfcode_xcon_ct100 buses=[node_47.2 s_node_47_b.1.0 s_node_47_b.0.2]
+new transformer.transformer_xf_xfs_node_47_c xfmrcode=xfcode_xcon_ct100 buses=[node_47.3 s_node_47_c.1.0 s_node_47_c.0.2]
+new transformer.transformer_xf_xfs_node_48_a xfmrcode=xfcode_xcon_ct100 buses=[node_48.1 s_node_48_a.1.0 s_node_48_a.0.2]
+new transformer.transformer_xf_xfs_node_48_b xfmrcode=xfcode_xcon_ct100 buses=[node_48.2 s_node_48_b.1.0 s_node_48_b.0.2]
+new transformer.transformer_xf_xfs_node_48_c xfmrcode=xfcode_xcon_ct100 buses=[node_48.3 s_node_48_c.1.0 s_node_48_c.0.2]
+new transformer.transformer_xf_xfs_node_49_a xfmrcode=xfcode_xcon_ct100 buses=[node_49.1 s_node_49_a.1.0 s_node_49_a.0.2]
+new transformer.transformer_xf_xfs_node_49_b xfmrcode=xfcode_xcon_ct100 buses=[node_49.2 s_node_49_b.1.0 s_node_49_b.0.2]
+new transformer.transformer_xf_xfs_node_49_c xfmrcode=xfcode_xcon_ct100 buses=[node_49.3 s_node_49_c.1.0 s_node_49_c.0.2]
+new transformer.transformer_xf_xfs_node_50_c xfmrcode=xfcode_xcon_ct100 buses=[node_50.3 s_node_50_c.1.0 s_node_50_c.0.2]
+new transformer.transformer_xf_xfs_node_51_a xfmrcode=xfcode_xcon_ct100 buses=[node_51.1 s_node_51_a.1.0 s_node_51_a.0.2]
+new transformer.transformer_xf_xfs_node_52_a xfmrcode=xfcode_xcon_ct100 buses=[node_52.1 s_node_52_a.1.0 s_node_52_a.0.2]
+new transformer.transformer_xf_xfs_node_53_a xfmrcode=xfcode_xcon_ct100 buses=[node_53.1 s_node_53_a.1.0 s_node_53_a.0.2]
+new transformer.transformer_xf_xfs_node_55_a xfmrcode=xfcode_xcon_ct100 buses=[node_55.1 s_node_55_a.1.0 s_node_55_a.0.2]
+new transformer.transformer_xf_xfs_node_56_b xfmrcode=xfcode_xcon_ct100 buses=[node_56.2 s_node_56_b.1.0 s_node_56_b.0.2]
+new transformer.transformer_xf_xfs_node_58_b xfmrcode=xfcode_xcon_ct100 buses=[node_58.2 s_node_58_b.1.0 s_node_58_b.0.2]
+new transformer.transformer_xf_xfs_node_59_b xfmrcode=xfcode_xcon_ct100 buses=[node_59.2 s_node_59_b.1.0 s_node_59_b.0.2]
+new transformer.transformer_xf_xfs_node_61_a xfmrcode=xfcode_xcon_ct100 buses=[node_61.1 s_node_61_a.1.0 s_node_61_a.0.2]
+new transformer.transformer_xf_xfs_node_62_c xfmrcode=xfcode_xcon_ct100 buses=[node_62.3 s_node_62_c.1.0 s_node_62_c.0.2]
+new transformer.transformer_xf_xfs_node_63_a xfmrcode=xfcode_xcon_ct100 buses=[node_63.1 s_node_63_a.1.0 s_node_63_a.0.2]
+new transformer.transformer_xf_xfs_node_64_b xfmrcode=xfcode_xcon_ct100 buses=[node_64.2 s_node_64_b.1.0 s_node_64_b.0.2]
+new transformer.transformer_xf_xfs_node_65_a xfmrcode=xfcode_xcon_ct100 buses=[node_65.1 s_node_65_a.1.0 s_node_65_a.0.2]
+new transformer.transformer_xf_xfs_node_65_b xfmrcode=xfcode_xcon_ct100 buses=[node_65.2 s_node_65_b.1.0 s_node_65_b.0.2]
+new transformer.transformer_xf_xfs_node_65_c xfmrcode=xfcode_xcon_ct100 buses=[node_65.3 s_node_65_c.1.0 s_node_65_c.0.2]
+new transformer.transformer_xf_xfs_node_66_c xfmrcode=xfcode_xcon_ct100 buses=[node_66.3 s_node_66_c.1.0 s_node_66_c.0.2]
+new transformer.transformer_xf_xfs_node_68_a xfmrcode=xfcode_xcon_ct100 buses=[node_68.1 s_node_68_a.1.0 s_node_68_a.0.2]
+new transformer.transformer_xf_xfs_node_69_a xfmrcode=xfcode_xcon_ct100 buses=[node_69.1 s_node_69_a.1.0 s_node_69_a.0.2]
+new transformer.transformer_xf_xfs_node_70_a xfmrcode=xfcode_xcon_ct100 buses=[node_70.1 s_node_70_a.1.0 s_node_70_a.0.2]
+new transformer.transformer_xf_xfs_node_71_a xfmrcode=xfcode_xcon_ct100 buses=[node_71.1 s_node_71_a.1.0 s_node_71_a.0.2]
+new transformer.transformer_xf_xfs_node_73_c xfmrcode=xfcode_xcon_ct100 buses=[node_73.3 s_node_73_c.1.0 s_node_73_c.0.2]
+new transformer.transformer_xf_xfs_node_74_c xfmrcode=xfcode_xcon_ct100 buses=[node_74.3 s_node_74_c.1.0 s_node_74_c.0.2]
+new transformer.transformer_xf_xfs_node_75_c xfmrcode=xfcode_xcon_ct100 buses=[node_75.3 s_node_75_c.1.0 s_node_75_c.0.2]
+new transformer.transformer_xf_xfs_node_76_a xfmrcode=xfcode_xcon_ct100 buses=[node_76.1 s_node_76_a.1.0 s_node_76_a.0.2]
+new transformer.transformer_xf_xfs_node_76_b xfmrcode=xfcode_xcon_ct100 buses=[node_76.2 s_node_76_b.1.0 s_node_76_b.0.2]
+new transformer.transformer_xf_xfs_node_76_c xfmrcode=xfcode_xcon_ct100 buses=[node_76.3 s_node_76_c.1.0 s_node_76_c.0.2]
+new transformer.transformer_xf_xfs_node_77_b xfmrcode=xfcode_xcon_ct100 buses=[node_77.2 s_node_77_b.1.0 s_node_77_b.0.2]
+new transformer.transformer_xf_xfs_node_79_a xfmrcode=xfcode_xcon_ct100 buses=[node_79.1 s_node_79_a.1.0 s_node_79_a.0.2]
+new transformer.transformer_xf_xfs_node_80_b xfmrcode=xfcode_xcon_ct100 buses=[node_80.2 s_node_80_b.1.0 s_node_80_b.0.2]
+new transformer.transformer_xf_xfs_node_82_a xfmrcode=xfcode_xcon_ct100 buses=[node_82.1 s_node_82_a.1.0 s_node_82_a.0.2]
+new transformer.transformer_xf_xfs_node_83_c xfmrcode=xfcode_xcon_ct100 buses=[node_83.3 s_node_83_c.1.0 s_node_83_c.0.2]
+new transformer.transformer_xf_xfs_node_84_c xfmrcode=xfcode_xcon_ct100 buses=[node_84.3 s_node_84_c.1.0 s_node_84_c.0.2]
+new transformer.transformer_xf_xfs_node_85_c xfmrcode=xfcode_xcon_ct100 buses=[node_85.3 s_node_85_c.1.0 s_node_85_c.0.2]
+new transformer.transformer_xf_xfs_node_86_b xfmrcode=xfcode_xcon_ct100 buses=[node_86.2 s_node_86_b.1.0 s_node_86_b.0.2]
+new transformer.transformer_xf_xfs_node_87_b xfmrcode=xfcode_xcon_ct100 buses=[node_87.2 s_node_87_b.1.0 s_node_87_b.0.2]
+new transformer.transformer_xf_xfs_node_88_a xfmrcode=xfcode_xcon_ct100 buses=[node_88.1 s_node_88_a.1.0 s_node_88_a.0.2]
+new transformer.transformer_xf_xfs_node_90_b xfmrcode=xfcode_xcon_ct100 buses=[node_90.2 s_node_90_b.1.0 s_node_90_b.0.2]
+new transformer.transformer_xf_xfs_node_92_c xfmrcode=xfcode_xcon_ct100 buses=[node_92.3 s_node_92_c.1.0 s_node_92_c.0.2]
+new transformer.transformer_xf_xfs_node_94_a xfmrcode=xfcode_xcon_ct100 buses=[node_94.1 s_node_94_a.1.0 s_node_94_a.0.2]
+new transformer.transformer_xf_xfs_node_95_b xfmrcode=xfcode_xcon_ct100 buses=[node_95.2 s_node_95_b.1.0 s_node_95_b.0.2]
+new transformer.transformer_xf_xfs_node_96_b xfmrcode=xfcode_xcon_ct100 buses=[node_96.2 s_node_96_b.1.0 s_node_96_b.0.2]
+new transformer.transformer_xf_xfs_node_98_a xfmrcode=xfcode_xcon_ct100 buses=[node_98.1 s_node_98_a.1.0 s_node_98_a.0.2]
+new transformer.transformer_xf_xfs_node_99_b xfmrcode=xfcode_xcon_ct100 buses=[node_99.2 s_node_99_b.1.0 s_node_99_b.0.2]
+new transformer.transformer_xf_xfs_node_100_c xfmrcode=xfcode_xcon_ct100 buses=[node_100.3 s_node_100_c.1.0 s_node_100_c.0.2]
+new transformer.transformer_xf_xfs_node_102_c xfmrcode=xfcode_xcon_ct100 buses=[node_102.3 s_node_102_c.1.0 s_node_102_c.0.2]
+new transformer.transformer_xf_xfs_node_103_c xfmrcode=xfcode_xcon_ct100 buses=[node_103.3 s_node_103_c.1.0 s_node_103_c.0.2]
+new transformer.transformer_xf_xfs_node_104_c xfmrcode=xfcode_xcon_ct100 buses=[node_104.3 s_node_104_c.1.0 s_node_104_c.0.2]
+new transformer.transformer_xf_xfs_node_106_b xfmrcode=xfcode_xcon_ct100 buses=[node_106.2 s_node_106_b.1.0 s_node_106_b.0.2]
+new transformer.transformer_xf_xfs_node_107_b xfmrcode=xfcode_xcon_ct100 buses=[node_107.2 s_node_107_b.1.0 s_node_107_b.0.2]
+new transformer.transformer_xf_xfs_node_109_a xfmrcode=xfcode_xcon_ct100 buses=[node_109.1 s_node_109_a.1.0 s_node_109_a.0.2]
+new transformer.transformer_xf_xfs_node_111_a xfmrcode=xfcode_xcon_ct100 buses=[node_111.1 s_node_111_a.1.0 s_node_111_a.0.2]
+new transformer.transformer_xf_xfs_node_112_a xfmrcode=xfcode_xcon_ct100 buses=[node_112.1 s_node_112_a.1.0 s_node_112_a.0.2]
+new transformer.transformer_xf_xfs_node_113_a xfmrcode=xfcode_xcon_ct100 buses=[node_113.1 s_node_113_a.1.0 s_node_113_a.0.2]
+new transformer.transformer_xf_xfs_node_114_a xfmrcode=xfcode_xcon_ct100 buses=[node_114.1 s_node_114_a.1.0 s_node_114_a.0.2]

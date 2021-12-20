@@ -1,0 +1,4 @@
+new line.j1 phases=1 bus1=cap_c88a.1 bus2=node_88.1 switch=yes
+new line.j2 phases=1 bus1=cap_c90b.2 bus2=node_90.2 switch=yes
+new line.j3 phases=1 bus1=cap_c92c.3 bus2=node_92.3 switch=yes
+new line.j4 phases=3 bus1=cap_c83.1.2.3 bus2=node_83.1.2.3 switch=yes
