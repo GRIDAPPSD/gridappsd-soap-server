@@ -16,7 +16,7 @@ cwd = os.getcwd()
 
 cases = [
   {'root':froot, 'mRID':'503D6E20-F499-4CC7-8051-971E23D0BF79','glmvsrc': 2400.00,'bases':[4160.0],
-   'export_options':' -l=1.0 -z=1.0 =h=1 -e=carson',
+   'export_options':' -l=1.0 -z=1.0 -h=1 -e=carson',
    'check_branches':[{'dss_link': 'LINE.LINE_L114', 'dss_bus': 'NODE_135', 'gld_link': 'LINE_LINE_L114', 'gld_bus': 'NODE_135'}]},
   ]
 
@@ -57,7 +57,8 @@ p1 = subprocess.Popen ('opendsscmd check.dss', shell=True)
 p1.wait()
 
 os.chdir(cwd)
-cimhub.make_glmrun_script (casefiles=cases, inpath='./glm/', outpath='./glm/', scriptname='./glm/checkglm.sh', movefiles=False)
+cimhub.make_glmrun_script (casefiles=cases, inpath='./glm/', outpath='./glm/', scriptname='./glm/checkglm.sh', movefiles=False, bHouses=True)
+shutil.copy ('../../CIMHub/support/appliance_schedules.glm', './glm/')
 shfile = './glm/checkglm.sh'
 st = os.stat (shfile)
 os.chmod (shfile, st.st_mode | stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH)

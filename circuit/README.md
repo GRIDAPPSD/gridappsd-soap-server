@@ -62,6 +62,12 @@ In an ungrounded system, MAEv can be large. Use the line-to-line voltage compari
 
 ## Results
 
+The first comparison excludes DER and house loads, i.e., the power flow results should all match.
+
+The second comparison includes DER, which reduces feeder loading in the exported models compared to the original OpenDSS case. In GridLAB-D,
+some of the load is represented with houses from the residential module, which increases feeder loading compared to both original
+and exported OpenDSS cases.
+
 ```
 WITHOUT HOUSES or DER
 
@@ -86,5 +92,24 @@ WITHOUT HOUSES or DER
 Transactive      Nbus=[  3036,  3036,  5602] Nlink=[  5507,  5507,   690] MAEv=[ 0.0006, 0.0028] MAEi=[   0.0099,   1.9438]
 
 WITH DER and WITH HOUSES (GridLAB-D only)
+  OpenDSS branch flow in LINE.LINE_L114 from NODE_135, Base case
+  Phs     Volts     rad      Amps     rad         kW          kVAR   PhsPhs     Volts     rad
+    A   2336.79 -0.0663    157.56 -0.0939    368.056 + j    10.152     AB     4065.41  0.4871
+    B   2413.32 -2.1206    130.77 -2.1485    315.464 + j     8.812     BC     4132.83 -1.6093
+    C   2346.76  2.0595    106.04  2.0345    248.782 + j     6.210     CA     4092.36  2.5662
+    Total S =   932.303 + j    25.174
+  OpenDSS branch flow in LINE.LINE_L114 from NODE_135, Converted case
+  Phs     Volts     rad      Amps     rad         kW          kVAR   PhsPhs     Volts     rad
+    A   2440.46  0.0087     24.25 -0.0719     58.992 + j     4.767     AB     4215.11  0.5354
+    B   2436.59 -2.0787     17.82 -2.1522     43.298 + j     3.187     BC     4213.28 -1.5549
+    C   2430.94  2.1118     12.83  2.0282     31.079 + j     2.604     CA     4229.35  2.6322
+    Total S =   133.369 + j    10.559
+  GridLAB-D branch flow in LINE_LINE_L114 from NODE_135
+  Phs     Volts     rad      Amps     rad         kW          kVAR   PhsPhs     Volts     rad
+    A   2365.35 -0.0079     90.80 -0.5735    181.334 + j   115.096     AB     4122.36  0.5292
+    B   2415.24  4.1957     72.74  3.5972    145.152 + j    98.979     BC     4142.99 -1.5677
+    C   2372.53  2.1041     70.28  1.5830    144.609 + j    83.008     CA     4123.87  2.6180
+    Total S =   471.094 + j   297.083
+Transactive      Nbus=[  3036,  3036,  7882] Nlink=[  5507,  7787,   690] MAEv=[ 0.0467, 0.0140] MAEi=[   8.0245,  42.8178]
 ```
 
