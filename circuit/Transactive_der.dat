@@ -1,4 +1,4 @@
-uuid_file,Transactive_der_uuid.txt
+uuid_file,Transactive_der_uuid.dat
 feederID,_503D6E20-F499-4CC7-8051-971E23D0BF79
 // name,bus,phases(ABCs1s2),type(Battery,Photovoltaic,SynchronousMachine),RatedkVA,RatedkV,kW,kVAR,RatedkWH,StoredkWH
 // commercial-scale, three-phase DER connected to the primary feeder
