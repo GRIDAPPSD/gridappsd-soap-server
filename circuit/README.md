@@ -30,14 +30,16 @@ The test case conversion is executed with ```python3 make_circuit.py```. The ste
 
 1. Solve the original GridAPPS-D case in OpenDSS, then create CIM XML
 2. Upload the CIM XML to Blazegraph
-3. Insert Houses. There are 1697 of these at 1280 EnergyConsumer locations.
-4. Insert DER. Near the substation, there is a 2-MW Synchronous Machine (Wind) with 2-MW, 4-hour battery. Out on the feeder, there is a 2-MW PV installation with a 2-MW, 4-hour battery. There are also 1134 rooftop PV, rated 3 kW each, installed at 90% of the EnergyConsumer locations.
+3. Insert the Houses as described above.
+4. Insert the DER as described above.
 5. List and insert CIM measurement points on the feeder
 6. Export CSV, DSS, and GridLAB-D (GLM) files from Blazegraph
 7. Solve the exported models in OpenDSS and GridLAB-D
 8. Compare the original OpenDSS power flow result with exported OpenDSS and GridLAB-D power flow results
 
-The test cases are configured by entries in the ```cases``` array near the top of ```test_OEDI.py```.
+Developers following this process should clone the Powergrid-Models and CIMHub repositorys, install a local copy of the cimhub Python module, build the CIMHub Java program, and either build or install recent versions of GridLAB-D and opendsscmd.
+
+The test cases are configured by entries in the ```cases``` array near the top of ```make_circuit.py```.
 Each array element is a dictionary with the following keys:
 
 - **root** is used to generate file names for converted files
