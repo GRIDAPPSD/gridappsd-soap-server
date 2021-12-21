@@ -6,20 +6,36 @@ Copyright (c) 2017-2021, Battelle Memorial Institute
 
 The archived files include:
 
-1. The CIM XML and UUID files are in _Transactive.xml_ and _transactive_uuids.dat_. The CIM measurement UUID values are maintained in _Transactive_msid.json_
-2. The original OpenDSS model files are in _*.dss_, with map coordinates in _Buscoords.csv_
+1. The base CIM XML and UUID files are in _Transactive.xml_ and _transactive_uuids.dat_. 
+2. The CIM house UUID values are maintained in _Transactive_house_uuids.json_.
+3. The CIM DER specifications and UUID values are in _Transactive_der.dat_ and _Transactive_der_uuid.dat_.
+4. The CIM measurement UUID values are maintained in _Transactive_msid.json_
+5. The original OpenDSS model files are in _*.dss_, with map coordinates in _Buscoords.csv_
 
-## Process
+## Uploading Process
 
-The test case conversion is executed with ```python3 test_OEDI.py```. The steps cover:
+The test case upload is performed with ```python3 upload_circuit.py```. This relies on completing the test case conversion and validation as described below, with results archived in the repository. The upload script does these steps:
+
+1. Empty the database
+2. Upload the CIM XML to Blazegraph
+3. Insert Houses. There are 1697 of these at 1280 EnergyConsumer locations.
+4. Insert DER. Near the substation, there is a 2-MW Synchronous Machine (Wind) with 2-MW, 4-hour battery. Out on the feeder, there is a 2-MW PV installation with a 2-MW, 4-hour battery. There are also 1134 rooftop PV, rated 3 kW each, installed at 90% of the EnergyConsumer locations.
+5. List and insert CIM measurement points on the feeder
+
+A developer following this process should have the Blazegraph container installed, and the CIMHub repository cloned from GitHub. From the local CIMHub directory, invoke ```pip3 install -e .``` because the cimhub package on PyPi may not have the latest features and fixes. However, it is not necessary to build the CIMImporter Java program, nor use OpenDSS or GridLAB-D, in following this process.
+
+## Conversion and Validation Process
+
+The test case conversion is executed with ```python3 make_circuit.py```. The steps cover:
 
 1. Solve the original GridAPPS-D case in OpenDSS, then create CIM XML
 2. Upload the CIM XML to Blazegraph
-3. TODO: insert DER and Houses
-4. List and insert CIM measurement points on the feeder
-5. Export CSV, DSS, and GridLAB-D (GLM) files from Blazegraph
-6. Solve the exported models in OpenDSS and GridLAB-D
-7. Compare the original OpenDSS power flow result with exported OpenDSS and GridLAB-D power flow results
+3. Insert Houses. There are 1697 of these at 1280 EnergyConsumer locations.
+4. Insert DER. Near the substation, there is a 2-MW Synchronous Machine (Wind) with 2-MW, 4-hour battery. Out on the feeder, there is a 2-MW PV installation with a 2-MW, 4-hour battery. There are also 1134 rooftop PV, rated 3 kW each, installed at 90% of the EnergyConsumer locations.
+5. List and insert CIM measurement points on the feeder
+6. Export CSV, DSS, and GridLAB-D (GLM) files from Blazegraph
+7. Solve the exported models in OpenDSS and GridLAB-D
+8. Compare the original OpenDSS power flow result with exported OpenDSS and GridLAB-D power flow results
 
 The test cases are configured by entries in the ```cases``` array near the top of ```test_OEDI.py```.
 Each array element is a dictionary with the following keys:
@@ -47,6 +63,8 @@ In an ungrounded system, MAEv can be large. Use the line-to-line voltage compari
 ## Results
 
 ```
+WITHOUT HOUSES or DER
+
   OpenDSS branch flow in LINE.LINE_L114 from NODE_135, Base case
   Phs     Volts     rad      Amps     rad         kW          kVAR   PhsPhs     Volts     rad
     A   2336.79 -0.0663    157.56 -0.0939    368.056 + j    10.152     AB     4065.41  0.4871
@@ -66,5 +84,7 @@ In an ungrounded system, MAEv can be large. Use the line-to-line voltage compari
     C   2352.17  2.0613    100.13  2.0361    235.446 + j     5.934     CA     4095.23  2.5695
     Total S =   891.219 + j    23.722
 Transactive      Nbus=[  3036,  3036,  5602] Nlink=[  5507,  5507,   690] MAEv=[ 0.0006, 0.0028] MAEi=[   0.0099,   1.9438]
+
+WITH DER and WITH HOUSES (GridLAB-D only)
 ```
 
