@@ -43,7 +43,7 @@ from DERGroupQueriesMessage import DERGroupQueriesResponseMessageType, DERGroupQ
     DERGroupQueriesPayloadType
 from DERGroupStatusQueriesMessage import DERGroupStatusQueriesResponseMessageType, DERGroupStatusQueriesRequestType
 
-conn = GridAPPSD()
+conn = GridAPPSD(username="system", password="manager")
 # conn.subscribe()
 
 # Devices = []
@@ -99,9 +99,13 @@ def _build_reply(result, errorCode, errorLevel=None, reason=None):
 class GetDevicesService(ServiceBase):
     # __port_types__ = ['ExecuteDERGroupsPort']
 
-    @rpc(_returns=Array(Device))
-    def GetDevices(ctx):
-        devices = conn.query_data(Queries.queryEndDevices)
+    @rpc(Unicode, _returns=Array(Device))
+    def GetDevices(ctx, mrid=None, **kwargs):
+        if mrid is not None:
+            query = Queries.queryEndDevices_Model.format(mrid="\"" + mrid + "\"")
+        else:
+            query = Queries.queryEndDevices
+        devices = conn.query_data(query)
         deviceList = []
         for d in devices['data']['results']['bindings']:
             print(d)
