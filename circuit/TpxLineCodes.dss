@@ -1,0 +1,4 @@
+! Triplex linecodes
+new linecode.trip_line_config nphases=2 units=mi
+~ rmatrix=[ 1.520000 | 0.550000 1.520000 ]
+~ xmatrix=[ 0.610000 | 0.440000 0.610000 ]

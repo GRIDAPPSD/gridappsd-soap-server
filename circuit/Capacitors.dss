@@ -1,0 +1,6 @@
+! Capacitor Definitions 
+
+new capacitor.cap_c88a bus1=cap_c88a.1 phases=1 kv=2.402 kvar=50.0 conn=wye
+new capacitor.cap_c90b bus1=cap_c90b.2 phases=1 kv=2.402 kvar=50.0 conn=wye
+new capacitor.cap_c92c bus1=cap_c92c.3 phases=1 kv=2.402 kvar=50.0 conn=wye
+new capacitor.cap_c83 bus1=cap_c83.1.2.3 phases=3 kv=4.160 kvar=600.0 conn=wye

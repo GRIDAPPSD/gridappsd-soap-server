@@ -1,0 +1,9 @@
+! Switch Definitions
+new line.swt_sw5 bus1=node_97.1.2.3 bus2=node_197.1.2.3 phases=3 switch=y
+new line.swt_sw4 bus1=node_60.1.2.3 bus2=node_160.1.2.3 phases=3 switch=y
+new line.swt_sw7 bus1=node_151.1.2.3 bus2=node_300.1.2.3 phases=3 switch=y enabled=false
+new line.swt_sw6 bus1=node_61.1.2.3 bus2=node_61s.1.2.3 phases=3 switch=y
+new line.swt_sw8 bus1=node_54.1 bus2=node_94.1 phases=1 switch=y enabled=false
+new line.swt_sw1 bus1=node_150r.1.2.3 bus2=node_149.1.2.3 phases=3 switch=y
+new line.swt_sw3 bus1=node_18.1.2.3 bus2=node_135.1.2.3 phases=3 switch=y
+new line.swt_sw2 bus1=node_13.1.2.3 bus2=node_152.1.2.3 phases=3 switch=y
