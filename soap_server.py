@@ -26,8 +26,9 @@ from spyne import Application, Service, ComplexModel, rpc, ServiceBase, Iterable
 from spyne.protocol.soap import Soap11
 from spyne.server.wsgi import WsgiApplication
 from spyne.util.wsgi_wrapper import WsgiMounter
+# import gridappsd
 from gridappsd import GridAPPSD
-from gridappsd import topics as t
+# from gridappsd import topics as t
 
 from device import Device
 from equipment import Equipments, SynchronousMachine, Solar, Battery
@@ -43,6 +44,8 @@ from DERGroupQueriesMessage import DERGroupQueriesResponseMessageType, DERGroupQ
     DERGroupQueriesPayloadType
 from DERGroupStatusQueriesMessage import DERGroupStatusQueriesResponseMessageType, DERGroupStatusQueriesRequestType
 
+# conn = GridAPPSD(username='system', password='manager')
+# conn = GridAPPSD(username='ff', password='gg')
 conn = GridAPPSD()
 # conn.subscribe()
 
