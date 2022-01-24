@@ -320,3 +320,25 @@ WHERE {{
 }}
 ORDER by ?name
 """
+
+
+queryModels = """
+PREFIX r: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX c: <http://iec.ch/TC57/CIM100#>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+SELECT DISTINCT ?fdr ?fdrid
+WHERE {
+  ?s a c:EndDevice .
+  ?s c:EndDevice.isSmartInverter ?issmart .
+  ?s c:EndDevice.UsagePoint ?upraw .
+    bind(strafter(str(?upraw),"#_") as ?upoint)
+  ?equip c:Equipment.UsagePoint ?upraw .
+  ?equip c:Equipment.EquipmentContainer ?container.
+  ?container c:IdentifiedObject.name ?fdr .
+  ?container c:IdentifiedObject.mRID ?fdrid .
+}
+ORDER by ?fdr
+"""
+
+
+

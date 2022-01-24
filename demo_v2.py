@@ -25,21 +25,45 @@ global deviceList
 gapps_sim = GridAPPSD("('localhost', 61613)",
                       username='system', password='manager')
 
-# Step 2: Query object mRID
+# Step 2: Query
 
-# Line_name
-model_mrid = "_E407CBB6-8C8D-9BC9-589C-AB83FBF0826D" #IEEE 123_PV
-
-# Query for EndDevices
+# Query for regionID and subregionID
 message = {
-    "modelId": model_mrid,
-    "requestType": "QUERY_OBJECT",
+    "requestType": "QUERY_MODEL_INFO",
     "resultFormat": "JSON",
-    "objectID": "_fc15a542-104c-41e6-9149-84ba968e3a6e"
 }
 
 response_obj = gapps_sim.get_response(t.REQUEST_POWERGRID_DATA, message)
+response_obj_models = response_obj["data"]["models"] #list format
+
+for b in response_obj_models:
+    print(b['regionName'], b['regionId'])
+    print(b['subRegionName'], b['subRegionId'])
+    print(b['modelName'], b['modelId'])
+
+time.sleep(2)
+
+# Query for object (Equipment)
+# Line_name
+model_mrid = "_503D6E20-F499-4CC7-8051-971E23D0BF79"
+
+# message = {
+#     "modelId": model_mrid,
+#     "requestType": "QUERY_OBJECT_DICT",
+#     "resultFormat": "JSON",
+#     "objectId": "_7357f5b6-86de-49b5-9e3c-42707475ab41"
+# }
+
+message = {
+        "requestType": "QUERY_OBJECT_DICT",
+        "modelId": model_mrid,
+        "resultFormat": "JSON",
+        "objectType": "PowerElectronicsConnection"
+}
+response_obj = gapps_sim.get_response(t.REQUEST_POWERGRID_DATA, message)
 information = response_obj["data"]
+
+time.sleep(2)
 
 queryEndDevices_Model = """
 PREFIX r: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>

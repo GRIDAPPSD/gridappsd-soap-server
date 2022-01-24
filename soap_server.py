@@ -30,6 +30,7 @@ from gridappsd import GridAPPSD
 from gridappsd import topics as t
 
 from device import Device
+from model import Model
 from equipment import Equipments, SynchronousMachine, Solar, Battery
 from DERGroups import DERGroups, EndDeviceGroup, EndDevice, DERFunction
 from exceptions import SamemRIDException, SameGroupNameException
@@ -96,8 +97,20 @@ def _build_reply(result, errorCode, errorLevel=None, reason=None):
     return reply
 
 
+class GetModelsService(ServiceBase):
+
+    @rpc(Unicode, _returns=Array(Model))
+    def GetModels(ctx):
+        models = conn.query_data(Queries.queryModels)
+        modelList = []
+        for m in models['data']['results']['bindings']:
+            print(m)
+            mm = Model(name=m['fdr']['value'], mRID=m['fdrid']['value'])
+            modelList.append(mm)
+        return modelList
+
+
 class GetDevicesService(ServiceBase):
-    # __port_types__ = ['ExecuteDERGroupsPort']
 
     @rpc(Unicode, _returns=Array(Device))
     def GetDevices(ctx, mrid=None, **kwargs):
@@ -422,6 +435,12 @@ class QueryDERGroupStatusesService(ServiceBase):
 #         for i in range(times):
 #             yield u'Hello, %s' % name
 
+getModels = Application(
+    services=[GetModelsService],
+    tns='der.pnnl.gov',
+    name='GetModelsService',
+    in_protocol=Soap11(validator='lxml'),
+    out_protocol=Soap11())
 getDevices = Application(
     services=[GetDevicesService],
     tns='der.pnnl.gov',
