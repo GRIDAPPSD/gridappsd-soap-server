@@ -1,4 +1,4 @@
-# Copyright (C) 2021 Battelle Memorial Institute
+# Copyright (C) 2021-2022 Battelle Memorial Institute
 # file: make_circuit.py
 
 import cimhub.api as cimhub
@@ -34,7 +34,7 @@ cimhub.insert_der (cfg_json, 'Transactive_der.dat')
 
 # insert measurements
 cimhub.list_measurables (cfg_json, froot, ckt_mRID)
-for mtxt in ['node_v', 'xfmr_pq', 'lines_pq', 'switch_i', 'loads', 'machines', 'special']:
+for mtxt in ['node_v', 'lines_pq', 'switch_i', 'loads', 'machines', 'special']:
   mfile = '{:s}_{:s}.txt'.format (froot, mtxt)
   cimhub.insert_measurements (cfg_json, mfile, froot + '_msid.json')
 cimhub.summarize_db (cfg_json)
