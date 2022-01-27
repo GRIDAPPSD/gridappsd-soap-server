@@ -99,7 +99,7 @@ def _build_reply(result, errorCode, errorLevel=None, reason=None):
 
 class GetModelsService(ServiceBase):
 
-    @rpc(Unicode, _returns=Array(Model))
+    @rpc(_returns=Array(Model))
     def GetModels(ctx):
         models = conn.query_data(Queries.queryModels)
         modelList = []
@@ -542,7 +542,8 @@ wsgi_app_get_sub = WsgiMounter({
     'getDevices': getDevices,
     # 'getDERGroups': getDERGroups,
     'queryDERGroups': queryDERGroups,
-    'queryDERGroupStatuses': queryDERGroupStatuses
+    'queryDERGroupStatuses': queryDERGroupStatuses,
+    'getModels': getModels
 })
 
 wsgi_app = WsgiMounter({
@@ -587,6 +588,7 @@ if __name__ == '__main__':
     logging.getLogger('spyne.protocol.xml').setLevel(logging.DEBUG)
 
     logging.info("listening to http://127.0.0.1:8008")
+    logging.info("GetModelsService wsdl is at: http://localhost:8008/get/getModels?wsdl")
     logging.info("GetDevicesService wsdl is at: http://localhost:8008/get/getDevices?wsdl")
     # logging.info("GetDERGroupsService wsdl is at: http://localhost:8008/get/getDERGroups?wsdl")
     logging.info("CreateDERGroupsService wsdl is at: http://localhost:8008/create/executeDERGroups?wsdl")
