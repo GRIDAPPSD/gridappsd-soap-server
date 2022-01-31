@@ -45,6 +45,8 @@ from DERGroupQueriesMessage import DERGroupQueriesResponseMessageType, DERGroupQ
 from DERGroupStatusQueriesMessage import DERGroupStatusQueriesResponseMessageType, DERGroupStatusQueriesRequestType
 
 conn = GridAPPSD(username="system", password="manager")
+simulation_id = None
+
 # conn.subscribe()
 
 # Devices = []
@@ -96,6 +98,17 @@ def _build_reply(result, errorCode, errorLevel=None, reason=None):
         reply.Error = ErrorType(code=errorCode, level=errorLevel, reason=reason)
     return reply
 
+
+class ExecuteSimulationService(ServiceBase):
+
+    @rpc(Unicode)
+    def sendSimuID(ctx, id=None, **kwargs):
+
+        global simulation_id
+        if id is not None:
+            simulation_id = id
+
+        # print(simulation_id)
 
 class GetModelsService(ServiceBase):
 
@@ -447,6 +460,13 @@ getDevices = Application(
     name='GetDevicesService',
     in_protocol=Soap11(validator='lxml'),
     out_protocol=Soap11())
+executeSimulation = Application(
+    services=[ExecuteSimulationService],
+    tns='der.pnnl.gov',
+    name='ExecuteSimulationService',
+    in_protocol=Soap11(validator='lxml'),
+    out_protocol=Soap11()
+)
 createDERGroups = Application(
     services=[CreateDERGroupsService],
     tns='der.pnnl.gov',
@@ -549,7 +569,7 @@ wsgi_app_get_sub = WsgiMounter({
 wsgi_app = WsgiMounter({
     'get': wsgi_app_get_sub,
     'create': WsgiMounter({'executeDERGroups': createDERGroups}),
-    'change': WsgiMounter({'executeDERGroups': executeDERGroups})
+    'change': WsgiMounter({'executeDERGroups': executeDERGroups, 'executeSimulation': executeSimulation})
 })
 
 # application = Application(
@@ -590,6 +610,7 @@ if __name__ == '__main__':
     logging.info("listening to http://127.0.0.1:8008")
     logging.info("GetModelsService wsdl is at: http://localhost:8008/get/getModels?wsdl")
     logging.info("GetDevicesService wsdl is at: http://localhost:8008/get/getDevices?wsdl")
+    logging.info("ExecuteSimulationService wsdl is at: http://localhost:8008/change/executeSimulation?wsdl")
     # logging.info("GetDERGroupsService wsdl is at: http://localhost:8008/get/getDERGroups?wsdl")
     logging.info("CreateDERGroupsService wsdl is at: http://localhost:8008/create/executeDERGroups?wsdl")
     logging.info("ExecuteDERGroupsService wsdl is at: http://localhost:8008/change/executeDERGroups?wsdl")
