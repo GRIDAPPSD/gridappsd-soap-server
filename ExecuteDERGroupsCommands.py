@@ -5,7 +5,7 @@ from SPARQLWrapper import SPARQLWrapper2
 # URL from outside the docker container:
 from exceptions import SamemRIDException, SameGroupNameException
 
-blazegraph_url = "http://localhost:8889/bigdata/sparql"
+blazegraph_url = "http://localhost:8889/bigdata/namespace/kb/sparql"
 
 cim100 = '<http://iec.ch/TC57/CIM100#'
 # Prefix for all queries.

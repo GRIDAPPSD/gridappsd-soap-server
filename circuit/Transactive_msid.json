@@ -15902,5 +15902,7 @@
   "PowerElectronicsConnection_PhotovoltaicUnit_Rooftop_999_Photovoltaic:house_agg_3_c_14_node_92_1081:s1:PNV": "_139921a9-02e5-48da-9e87-e8d968aa6539",
   "PowerElectronicsConnection_PhotovoltaicUnit_Rooftop_999_Photovoltaic:house_agg_3_c_14_node_92_1081:s1:VA": "_44a679db-8c91-465e-8d93-2b6d04de6736",
   "PowerElectronicsConnection_PhotovoltaicUnit_Rooftop_999_Photovoltaic:house_agg_3_c_14_node_92_1081:s2:PNV": "_78273c0f-973a-451a-80af-ec048643c89e",
-  "PowerElectronicsConnection_PhotovoltaicUnit_Rooftop_999_Photovoltaic:house_agg_3_c_14_node_92_1081:s2:VA": "_f37a8f59-9629-4f5c-a901-2dea46f595e3"
+  "PowerElectronicsConnection_PhotovoltaicUnit_Rooftop_999_Photovoltaic:house_agg_3_c_14_node_92_1081:s2:VA": "_f37a8f59-9629-4f5c-a901-2dea46f595e3",
+  "ACLineSegment_line_l43:v2:A:PNV": "_a8150b65-1673-4666-bfff-208862a2a80f",
+  "ACLineSegment_line_l43:s1:A:VA": "_c4b4b13b-a2e5-49a2-8aab-496f9266cb88"
 }

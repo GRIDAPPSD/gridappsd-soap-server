@@ -26,11 +26,11 @@ from spyne import Application, Service, ComplexModel, rpc, ServiceBase, Iterable
 from spyne.protocol.soap import Soap11
 from spyne.server.wsgi import WsgiApplication
 from spyne.util.wsgi_wrapper import WsgiMounter
-# import gridappsd
 from gridappsd import GridAPPSD
-# from gridappsd import topics as t
+from gridappsd import topics as t
 
 from device import Device
+from model import Model
 from equipment import Equipments, SynchronousMachine, Solar, Battery
 from DERGroups import DERGroups, EndDeviceGroup, EndDevice, DERFunction
 from exceptions import SamemRIDException, SameGroupNameException
@@ -44,9 +44,9 @@ from DERGroupQueriesMessage import DERGroupQueriesResponseMessageType, DERGroupQ
     DERGroupQueriesPayloadType
 from DERGroupStatusQueriesMessage import DERGroupStatusQueriesResponseMessageType, DERGroupStatusQueriesRequestType
 
-# conn = GridAPPSD(username='system', password='manager')
-# conn = GridAPPSD(username='ff', password='gg')
-conn = GridAPPSD()
+conn = GridAPPSD(username="system", password="manager")
+simulation_id = None
+
 # conn.subscribe()
 
 # Devices = []
@@ -99,12 +99,39 @@ def _build_reply(result, errorCode, errorLevel=None, reason=None):
     return reply
 
 
-class GetDevicesService(ServiceBase):
-    # __port_types__ = ['ExecuteDERGroupsPort']
+class ExecuteSimulationService(ServiceBase):
 
-    @rpc(_returns=Array(Device))
-    def GetDevices(ctx):
-        devices = conn.query_data(Queries.queryEndDevices)
+    @rpc(Unicode)
+    def sendSimuID(ctx, id=None, **kwargs):
+
+        global simulation_id
+        if id is not None:
+            simulation_id = id
+
+        # print(simulation_id)
+
+class GetModelsService(ServiceBase):
+
+    @rpc(_returns=Array(Model))
+    def GetModels(ctx):
+        models = conn.query_data(Queries.queryModels)
+        modelList = []
+        for m in models['data']['results']['bindings']:
+            print(m)
+            mm = Model(name=m['fdr']['value'], mRID=m['fdrid']['value'])
+            modelList.append(mm)
+        return modelList
+
+
+class GetDevicesService(ServiceBase):
+
+    @rpc(Unicode, _returns=Array(Device))
+    def GetDevices(ctx, mrid=None, **kwargs):
+        if mrid is not None:
+            query = Queries.queryEndDevices_Model.format(mrid="\"" + mrid + "\"")
+        else:
+            query = Queries.queryEndDevices
+        devices = conn.query_data(query)
         deviceList = []
         for d in devices['data']['results']['bindings']:
             print(d)
@@ -421,12 +448,25 @@ class QueryDERGroupStatusesService(ServiceBase):
 #         for i in range(times):
 #             yield u'Hello, %s' % name
 
+getModels = Application(
+    services=[GetModelsService],
+    tns='der.pnnl.gov',
+    name='GetModelsService',
+    in_protocol=Soap11(validator='lxml'),
+    out_protocol=Soap11())
 getDevices = Application(
     services=[GetDevicesService],
     tns='der.pnnl.gov',
     name='GetDevicesService',
     in_protocol=Soap11(validator='lxml'),
     out_protocol=Soap11())
+executeSimulation = Application(
+    services=[ExecuteSimulationService],
+    tns='der.pnnl.gov',
+    name='ExecuteSimulationService',
+    in_protocol=Soap11(validator='lxml'),
+    out_protocol=Soap11()
+)
 createDERGroups = Application(
     services=[CreateDERGroupsService],
     tns='der.pnnl.gov',
@@ -522,13 +562,14 @@ wsgi_app_get_sub = WsgiMounter({
     'getDevices': getDevices,
     # 'getDERGroups': getDERGroups,
     'queryDERGroups': queryDERGroups,
-    'queryDERGroupStatuses': queryDERGroupStatuses
+    'queryDERGroupStatuses': queryDERGroupStatuses,
+    'getModels': getModels
 })
 
 wsgi_app = WsgiMounter({
     'get': wsgi_app_get_sub,
     'create': WsgiMounter({'executeDERGroups': createDERGroups}),
-    'change': WsgiMounter({'executeDERGroups': executeDERGroups})
+    'change': WsgiMounter({'executeDERGroups': executeDERGroups, 'executeSimulation': executeSimulation})
 })
 
 # application = Application(
@@ -567,7 +608,9 @@ if __name__ == '__main__':
     logging.getLogger('spyne.protocol.xml').setLevel(logging.DEBUG)
 
     logging.info("listening to http://127.0.0.1:8008")
+    logging.info("GetModelsService wsdl is at: http://localhost:8008/get/getModels?wsdl")
     logging.info("GetDevicesService wsdl is at: http://localhost:8008/get/getDevices?wsdl")
+    logging.info("ExecuteSimulationService wsdl is at: http://localhost:8008/change/executeSimulation?wsdl")
     # logging.info("GetDERGroupsService wsdl is at: http://localhost:8008/get/getDERGroups?wsdl")
     logging.info("CreateDERGroupsService wsdl is at: http://localhost:8008/create/executeDERGroups?wsdl")
     logging.info("ExecuteDERGroupsService wsdl is at: http://localhost:8008/change/executeDERGroups?wsdl")

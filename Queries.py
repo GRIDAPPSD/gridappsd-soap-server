@@ -294,3 +294,51 @@ WHERE {
 }
 ORDER by ?name
 """
+
+
+queryEndDevices_Model = """
+PREFIX r: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX c: <http://iec.ch/TC57/CIM100#>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+SELECT ?name ?mrid ?issmart ?upoint #?upoint
+WHERE {{
+  ?s a c:EndDevice .
+  ?s c:IdentifiedObject.name ?name .
+  ?s c:IdentifiedObject.mRID ?rawmrid .
+    bind(strafter(str(?rawmrid),"_") as ?mrid)
+  ?s c:EndDevice.isSmartInverter ?issmart .
+  ?s c:EndDevice.UsagePoint ?upraw .
+    bind(strafter(str(?upraw),"#_") as ?upoint)
+  #?upraw c:IdentifiedObject.name ?upointName .
+  #?upraw c:IdentifiedObject.mRID ?upointID .
+  #  bind(strafter(str(?upointID),"_") as ?upoint2)
+  ?equip c:Equipment.UsagePoint ?upraw .
+  ?equip c:Equipment.EquipmentContainer ?container.
+  ?container c:IdentifiedObject.name ?fdr .
+  ?container c:IdentifiedObject.mRID ?fdrid .
+  VALUES ?fdrid {{{mrid}}} .
+}}
+ORDER by ?name
+"""
+
+
+queryModels = """
+PREFIX r: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX c: <http://iec.ch/TC57/CIM100#>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+SELECT DISTINCT ?fdr ?fdrid
+WHERE {
+  ?s a c:EndDevice .
+  ?s c:EndDevice.isSmartInverter ?issmart .
+  ?s c:EndDevice.UsagePoint ?upraw .
+    bind(strafter(str(?upraw),"#_") as ?upoint)
+  ?equip c:Equipment.UsagePoint ?upraw .
+  ?equip c:Equipment.EquipmentContainer ?container.
+  ?container c:IdentifiedObject.name ?fdr .
+  ?container c:IdentifiedObject.mRID ?fdrid .
+}
+ORDER by ?fdr
+"""
+
+
+
