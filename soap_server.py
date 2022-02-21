@@ -38,6 +38,7 @@ from message import ReplyType, HeaderType, ResultType, ErrorType, LevelType, UUI
     Name
 from ExecuteDERGroupsCommands import insertEndDeviceGroup, deleteDERGroupByMrid, deleteDERGroupByName, modifyDERGroup
 from DERGroupsMessage import DERGroupsPayloadType, DERGroupsResponseMessageType, DERGroupsRequestMessageType
+from DERGroupDispatchesMessage import DERGroupDispatchesPayloadType, DERGroupDispatchesResponseMessageType
 from datetime import datetime
 from DERGroupQueries import DERGroupQueries
 from DERGroupQueriesMessage import DERGroupQueriesResponseMessageType, DERGroupQueriesRequestType, \
@@ -216,6 +217,48 @@ class GetDevicesService(ServiceBase):
 #             return DERGroups(endDeviceGroup=groups)
 #         else:
 #             return DERGroups(endDeviceGroup=None)
+
+
+class CreateDERGroupDispatchesService(ServiceBase):
+
+    @rpc(HeaderType, DERGroupDispatchesPayloadType, _returns=DERGroupDispatchesResponseMessageType,
+         _in_variable_names={"Payload": "Payload"})
+    # @rpc(Iterable(Unicode), Iterable(Unicode), _returns=Unicode, _in_variable_names={"Payload": "Payload"})
+    def CreateDERGroupDispatches(ctx, Header=None, Payload=None, **kwarg):
+        re = DERGroupDispatchesResponseMessageType
+        reply = ReplyType()
+        error = False
+        for i in Payload.DERGroupDispatches.DERGroupDispatch:
+
+            # generate mRID for each dispatch
+            if not i.mRID:
+                if not i.mRID:
+                    i.mRID = str(uuid.uuid4())
+                    re.Payload = Payload
+
+            # execute each dispatch
+            try:
+                # dispatchDERgroup(i)
+                pass
+            except SamemRIDException:
+                error = True
+                eid = UUIDWithAttribute(objectType="DERGroupDispatch", value=i.mRID, kind=IDKindType.UUID)
+            except Exception as ex:
+                error = True
+                eid = UUIDWithAttribute(objectType="DERGroupDispatch")
+                print(ex)
+
+        re.Header = HeaderType(verb=VerbType.REPLY, noun="DERGroupDispatches", timestamp=datetime.now(), messageID=uuid.uuid4(),
+                               correlationID=uuid.uuid4())
+        if not error:
+            reply.Result = ResultType.OK
+            reply.Error = ErrorType(code='0.0')
+        else:
+            reply.Result = ResultType.FAILED
+            reply.Error = ErrorType(code='6.1', level=LevelType.FATAL, reason='Request cancelled per business rule',ID=eid)
+
+        re.Reply = reply
+        return re
 
 
 class CreateDERGroupsService(ServiceBase):
@@ -474,6 +517,13 @@ createDERGroups = Application(
     in_protocol=Soap11(validator='lxml'),
     out_protocol=Soap11()
 )
+createDERGroupDispatches = Application(
+    services=[CreateDERGroupDispatchesService],
+    tns='der.pnnl.gov',
+    name='CreateDERGroupDispatchesService',
+    in_protocol=Soap11(validator='lxml'),
+    out_protocol=Soap11()
+)
 # getDERGroups = Application(
 #     services=[GetDERGroupsService],
 #     tns='der.pnnl.gov',
@@ -568,7 +618,7 @@ wsgi_app_get_sub = WsgiMounter({
 
 wsgi_app = WsgiMounter({
     'get': wsgi_app_get_sub,
-    'create': WsgiMounter({'executeDERGroups': createDERGroups}),
+    'create': WsgiMounter({'executeDERGroups': createDERGroups, 'executeDERGroupDispatches': createDERGroupDispatches}),
     'change': WsgiMounter({'executeDERGroups': executeDERGroups, 'executeSimulation': executeSimulation})
 })
 
@@ -616,6 +666,8 @@ if __name__ == '__main__':
     logging.info("ExecuteDERGroupsService wsdl is at: http://localhost:8008/change/executeDERGroups?wsdl")
     logging.info("QueryDERGroupsService wsdl is at: http://localhost:8008/get/queryDERGroups?wsdl")
     logging.info("QueryDERGroupStatusesService wsdl is at: http://localhost:8008/get/queryDERGroupStatuses?wsdl")
+
+    logging.info("CreateDERGroupDispatchesService wsdl is at: http://localhost:8008/create/executeDERGroupDispatches?wsdl")
 
     server = make_server('127.0.0.1', 8008, wsgi_app)
     server.serve_forever()
