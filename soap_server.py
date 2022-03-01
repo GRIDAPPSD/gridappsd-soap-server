@@ -9,6 +9,7 @@ Run with
          -p 10
 
 """
+import math
 
 import Queries
 
@@ -16,6 +17,7 @@ import time
 import json
 import pprint
 import uuid
+import DERGroupStatuses
 from lxml import etree
 
 # from spyne import Application, ServiceBase, Unicode, rpc
@@ -42,10 +44,11 @@ from datetime import datetime
 from DERGroupQueries import DERGroupQueries
 from DERGroupQueriesMessage import DERGroupQueriesResponseMessageType, DERGroupQueriesRequestType, \
     DERGroupQueriesPayloadType
-from DERGroupStatusQueriesMessage import DERGroupStatusQueriesResponseMessageType, DERGroupStatusQueriesRequestType
+from DERGroupStatusQueriesMessage import DERGroupStatusQueriesResponseMessageType, DERGroupStatusQueriesRequestType, DERGroupStatusQueriesPayloadType
 
 conn = GridAPPSD(username="system", password="manager")
 simulation_id = None
+model_mrid = ''
 
 # conn.subscribe()
 
@@ -110,6 +113,7 @@ class ExecuteSimulationService(ServiceBase):
 
         # print(simulation_id)
 
+
 class GetModelsService(ServiceBase):
 
     @rpc(_returns=Array(Model))
@@ -128,6 +132,7 @@ class GetDevicesService(ServiceBase):
     @rpc(Unicode, _returns=Array(Device))
     def GetDevices(ctx, mrid=None, **kwargs):
         if mrid is not None:
+            model_mrid = mrid
             query = Queries.queryEndDevices_Model.format(mrid="\"" + mrid + "\"")
         else:
             query = Queries.queryEndDevices
@@ -372,6 +377,265 @@ class QueryDERGroupsService(ServiceBase):
     @staticmethod
     def build_response_payload(groups):
         endgroups = []
+        if 'data' in groups and 'results' in groups['data'] and 'bindings' in groups['data']['results']:
+            for g in groups['data']['results']['bindings']:
+                mRID = None
+                if 'mRID' in g:
+                    mRID = g['mRID']['value']
+                description = None
+                if 'description' in g:
+                    description = g['description']['value']
+                names = g['names']['value']
+                name = []
+                if names:
+                    nms = names.split('\n')
+                    for nm in nms:
+                        name.append(Name(name=nm))
+                devices = g['devices']['value']
+                endDevices = []
+                if devices:
+                    dvcs = devices.split('\n')
+                    for dd in dvcs:
+                        ids = dd.split(',')
+                        endDevices.append(EndDevice(mRID=ids[0], names=[Name(name=ids[1])], isSmart=ids[2]))
+                funcs = g['funcs']['value']
+                derfuncs = dict()
+                if funcs:
+                    fs = funcs.split('\n')
+                    for ff in fs:
+                        func = ff.split(',')
+                        if func[1] == 'true':
+                            derfuncs[func[0]] = True
+                        else:
+                            derfuncs[func[0]] = False
+                    derfunc = DERFunction(connectDisconnect=derfuncs['connectDisconnect'],
+                                          frequencyWattCurveFunction=derfuncs['frequencyWattCurveFunction'],
+                                          maxRealPowerLimiting=derfuncs['maxRealPowerLimiting'],
+                                          rampRateControl=derfuncs['rampRateControl'],
+                                          reactivePowerDispatch=derfuncs['reactivePowerDispatch'],
+                                          realPowerDispatch=derfuncs['realPowerDispatch'],
+                                          voltageRegulation=derfuncs['voltageRegulation'],
+                                          voltVarCurveFunction=derfuncs['voltVarCurveFunction'],
+                                          voltWattCurveFunction=derfuncs['voltWattCurveFunction'])
+                else:
+                    derfunc = None
+                newgroup = EndDeviceGroup(mRID=mRID, description=description, endDevices=endDevices, names=name,
+                                      DERFunction=derfunc)
+                endgroups.append(newgroup)
+        if endgroups:
+            dergroups = DERGroups(endDeviceGroup=endgroups)
+        else:
+            dergroups = DERGroups(endDeviceGroup=None)
+
+        re = DERGroupQueriesPayloadType(dERGroups=dergroups)
+        return re
+
+
+class QueryDERGroupStatusesService(ServiceBase):
+    @rpc(HeaderType, DERGroupStatusQueriesRequestType, _returns=DERGroupStatusQueriesResponseMessageType)
+    def QueryDERGroupStatuses(ctx, Header=None, Request=None, **kwargs):
+        print(Header)
+        print(Request)
+        names = []
+        mRIDs = []
+        if Request.DERGroupStatusQueries.EndDeviceGroup:
+            for group in Request.DERGroupStatusQueries.EndDeviceGroup:
+                if group:
+                    if group.Names:
+                        for name in group.Names:
+                            names.append(name.name)
+                            print(name.name)
+                    elif group.mRID:
+                        mRIDs.append(str(group.mRID))
+                        print(group.mRID)
+        query = ""
+        if names:
+            # b = "\"" + "\" \"".join(names) + "\""
+            query = Queries.queryEquipmentByName.format(groupnames="\"" + "\" \"".join(names) + "\"")
+        if mRIDs:
+            query = Queries.queryEquipmentBymRID.format(mRIDs="\"" + "\" \"".join(mRIDs) + "\"")
+        success = False
+        try:
+            groups = conn.query_data(query)
+            success = True
+        except Exception as e:
+            pass
+
+        re = DERGroupStatusQueriesResponseMessageType
+        reheader = _build_response_header(VerbType.REPLY)
+        re.Header = reheader
+
+        if success:
+            payload = DERGroupStatusQueriesPayloadType()
+            status = DERGroupStatuses.DERGroupStatuses()
+            payload.DERGroupStatuses = status
+            reply = _build_reply(ResultType.OK, '0.0')
+
+            message = {"query":"select process_id from log where process_type like \"%goss.gridappsd.process.request.simulation%\" order by timestamp desc limit 1"}
+            response_obj = conn.get_response(t.LOGS, message)
+            if 'data' in response_obj.keys() and len(response_obj["data"]) > 0:
+                simulation = response_obj["data"][0]
+                if 'process_id' in simulation:
+                    simulation_id = simulation['process_id']
+
+            equipmentIDs = []
+            if 'data' in groups and 'results' in groups['data'] and 'bindings' in groups['data']['results']:
+                edgroups = []
+                for g in groups['data']['results']['bindings']:
+                    enddevicegroup = DERGroupStatuses.EndDeviceGroup()
+                    mRID = None
+                    if 'mRID' in g:
+                        mRID = g['mRID']['value']
+                        enddevicegroup.mRID = mRID
+
+                    description = None
+                    if 'description' in g:
+                        description = g['description']['value']
+                    names = g['names']['value']
+                    name = []
+                    if names:
+                        nms = names.split('\n')
+                        for nm in nms:
+                            name.append(Name(name=nm))
+                        enddevicegroup.Names = name
+                    model_mrid = g['modelID']['value']
+                    equipments = g['equipIDs']['value']
+                    if equipments:
+                        parameters = []
+                        parametersDict = {}
+                        enddevicegroup.DERMonitorableParameter = parameters
+                        equipmentIDs = equipments.split('\n')
+                        returnTimestamp = -1
+                        for equip in equipmentIDs:
+                            # detail = equip.split(',')
+                            # equipmRID = detail[0]
+                            # equipType = detail[1]
+
+                            # Create query message to obtain measurement mRIDs for all switches
+                            message = {
+                                "modelId": model_mrid,
+                                "requestType": "QUERY_OBJECT_MEASUREMENTS",
+                                "resultFormat": "JSON",
+                                "objectId": equip
+                            }
+    #                         message = '{"requestType": "QUERY_MODEL_NAMES", "resultFormat": "JSON"}'
+                            # Pass query message to PowerGrid Models API
+                            response_obj = conn.get_response(t.REQUEST_POWERGRID_DATA, message)
+                            if 'data' in response_obj:
+                                measurements_obj = response_obj["data"]
+                                meaDict = {}
+                                for k in measurements_obj:
+                                    if k['type'] == 'VA' or k['type'] == 'SoC':
+                                        meaDict[k['measid']] = k
+                                # measids = [k['measid'] for k in measurements_obj if k['type'] == 'VA' or k['type'] == 'SoC']
+                            # message = {
+                            #     "processId": simulation_id,
+                            #     "processStatus": "RUNNING",
+                            #     "logLevel": "INFO"
+                            # }
+                            #
+                            # tmess = conn.get_response(t.LOGS, message)
+                            # message = {
+                            #     "query": "select timestamp from log order by timestamp desc limit 1"}
+                            # response_obj = conn.get_response(t.LOGS, message)
+
+                            import time
+
+                            # start_time = str(int(time.time()) - 10)  # Start query from 10 sec ago
+                            # end_time = str(int(time.time()))
+                            start_time = '1645725066'
+                            end_time = '1645725067'
+
+
+                            # Query for a particular set of measurments
+                            message = {
+                                "queryMeasurement": "simulation",
+                                "queryFilter": {"simulation_id": simulation_id,
+                                                "measurement_mrid": list(meaDict.keys()),
+                                                "hasSimulationMessageType": "OUTPUT"},
+                                "responseFormat": "JSON"
+                            }
+
+                            mea = conn.get_response(t.TIMESERIES, message)  # Pass API call
+                            if 'data' in mea:
+                                groupedMea = {}
+                                for m in mea['data']:
+                                    if m['measurement_mrid'] not in groupedMea:
+                                        groupedMea[m['measurement_mrid']] = []
+                                    groupedMea[m['measurement_mrid']].append(m)
+                                for m in meaDict.keys():
+                                    if m in groupedMea:
+                                        timestamp = 0
+                                        latest = {}
+                                        if returnTimestamp == -1:
+                                            for ts in groupedMea[m]:
+                                                if ts['time'] > timestamp:
+                                                    latest = ts
+                                            returnTimestamp = latest['time']
+                                        else:
+                                            for ts in groupedMea[m]:
+                                                if ts['time'] == returnTimestamp:
+                                                    latest = ts
+                                                    break
+
+                                        if meaDict[m]['type'] == 'VA':
+                                            ang = math.radians(float(latest['angle']))
+                                            mag = float(latest['magnitude'])
+                                            s = math.sin(ang)
+                                            c = math.cos(ang)
+                                            img = mag * s
+                                            if 'img' not in parametersDict:
+                                                parametersDict['img'] = {'timestamp': latest['time'], 'value': 0}
+                                            parametersDict['img']['value'] += img / 1000
+                                            real = mag * c
+                                            if 'real' not in parametersDict:
+                                                parametersDict['real'] = {'timestamp': latest['time'], 'value': 0}
+                                            parametersDict['real']['value'] += real / 1000
+                                        if meaDict[m]['type'] == 'SoC':
+                                            # if 'Soc' not in parametersDict:
+                                            #     parametersDict['Soc'] = 0
+                                            print('SoC found.')
+                            # equipmSID = [k for k in measurements_obj if k['eqid'] == equipmRID]
+
+                            # # Switch position measurements (Pos)
+                            # Pos_obj = [k for k in measurements_obj if k['type'] == 'Pos']
+                            #
+                            # # Switch phase-neutral-voltage measurements (PNV)
+                            # PNV_obj = [k for k in measurements_obj if k['type'] == 'PNV']
+                            #
+                            # # Switch volt-ampere apparent power measurements (VA)
+                            # VA_obj = [k for k in measurements_obj if k['type'] == 'VA']
+                            #
+                            # # Switch current measurements (A)
+                            # A_obj = [k for k in measurements_obj if k['type'] == 'A']
+                        for k, v in parametersDict.items():
+                            tt = datetime.fromtimestamp(v['timestamp']).strftime('%Y-%m-%dT%H:%M:%S%z')
+                            vv = v['value']
+                            derParameter = DERGroupStatuses.DERMonitorableParameter()
+                            curve = DERGroupStatuses.DERCurveData(nominalYValue=vv, timeStamp=tt)
+                            derParameter.DERCurveData = curve
+                            if k == 'real':
+                                derParameter.DERParameter = DERGroupStatuses.DERParameterKind.activePower
+                                derParameter.yMultiplier = DERGroupStatuses.UnitMultiplier.k
+                                derParameter.yUnit = DERGroupStatuses.DERUnitSymbol.W
+                            if k == 'img':
+                                derParameter.DERParameter = DERGroupStatuses.DERParameterKind.reactivePower
+                                derParameter.yMultiplier = DERGroupStatuses.UnitMultiplier.k
+                                derParameter.yUnit = DERGroupStatuses.DERUnitSymbol.VAr
+                            parameters.append(derParameter)
+                    edgroups.append(enddevicegroup)
+                status.EndDeviceGroup = edgroups
+        else:
+            payload = None
+            reply = _build_reply(ResultType.FAILED, '6.1')
+        re.Payload = payload
+        re.Reply = reply
+        return re
+
+
+    @staticmethod
+    def build_response_payload(groups):
+        endgroups = []
         for g in groups['data']['results']['bindings']:
             mRID = None
             if 'mRID' in g:
@@ -422,15 +686,6 @@ class QueryDERGroupsService(ServiceBase):
             dergroups = DERGroups(endDeviceGroup=None)
 
         re = DERGroupQueriesPayloadType(dERGroups=dergroups)
-        return re
-
-
-class QueryDERGroupStatusesService(ServiceBase):
-    @rpc(HeaderType, DERGroupStatusQueriesRequestType, _returns=DERGroupStatusQueriesResponseMessageType)
-    def QueryDERGroupStatuses(ctx, Header=None, Request=None, **kwargs):
-        print(Header)
-        print(Request)
-        re = DERGroupStatusQueriesResponseMessageType
         return re
 
 

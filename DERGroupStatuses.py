@@ -247,7 +247,7 @@ class DERMonitorableParameter(ComplexModel):
 
     def __init__(self, dERParameter=None, flowDirection=None, yMultiplier=None, yUnit=None, yUnitInstalledMax=None, yUnitInstalledMin=None, DERCurveData=None, **kwargs):
         super().__init__(DERParameter=dERParameter, flowDirection=flowDirection, yMultiplier=yMultiplier, yUnit=yUnit, yUnitInstalledMax=yUnitInstalledMax, yUnitInstalledMin=yUnitInstalledMin, **kwargs)
-        self.dERParameter = dERParameter
+        self.DERParameter = dERParameter
         self.flowDirection = flowDirection
         self.yMultiplier = yMultiplier
         self.yUnit = yUnit
@@ -355,13 +355,13 @@ class EndDeviceGroup(ComplexModel):
         super().__init__(mRID=mRID, DERMonitorableParameter=dERMonitorableParameter, Names=names, status=status, **kwargs)
         self.mRID = mRID
         if dERMonitorableParameter is None:
-            self.dERMonitorableParameter = []
+            self.DERMonitorableParameter = []
         else:
-            self.dERMonitorableParameter = dERMonitorableParameter
+            self.DERMonitorableParameter = dERMonitorableParameter
         if names is None:
-            self.names = []
+            self.Names = []
         else:
-            self.names = names
+            self.Names = names
         self.status = status
 # end class EndDeviceGroup
 
@@ -374,7 +374,7 @@ class DERGroupStatuses(ComplexModel):
     def __init__(self, endDeviceGroup=None, **kwargs):
         super().__init__(EndDeviceGroup=endDeviceGroup, **kwargs)
         if endDeviceGroup is None:
-            self.endDeviceGroup = []
+            self.EndDeviceGroup = []
         else:
-            self.endDeviceGroup = endDeviceGroup
+            self.EndDeviceGroup = endDeviceGroup
 # end class DERGroupStatuses
