@@ -46,6 +46,7 @@ from DERGroupQueries import DERGroupQueries
 from DERGroupQueriesMessage import DERGroupQueriesResponseMessageType, DERGroupQueriesRequestType, \
     DERGroupQueriesPayloadType
 from DERGroupStatusQueriesMessage import DERGroupStatusQueriesResponseMessageType, DERGroupStatusQueriesRequestType, DERGroupStatusQueriesPayloadType
+from DERGroupForecastQueriesMessage import DERGroupForecastQueriesResponseMessageType, DERGroupForecastQueriesRequestType, DERGroupForecastQueriesPayloadType
 
 conn = GridAPPSD(username="system", password="manager")
 simulation_id = None
@@ -582,12 +583,12 @@ class QueryDERGroupStatusesService(ServiceBase):
                             #     "query": "select timestamp from log order by timestamp desc limit 1"}
                             # response_obj = conn.get_response(t.LOGS, message)
 
-                            import time
+                            # import time
 
                             # start_time = str(int(time.time()) - 10)  # Start query from 10 sec ago
                             # end_time = str(int(time.time()))
-                            start_time = '1645725066'
-                            end_time = '1645725067'
+                            # start_time = '1645725066'
+                            # end_time = '1645725067'
 
 
                             # Query for a particular set of measurments
@@ -653,7 +654,7 @@ class QueryDERGroupStatusesService(ServiceBase):
                             # A_obj = [k for k in measurements_obj if k['type'] == 'A']
                         for k, v in parametersDict.items():
                             tt = datetime.fromtimestamp(v['timestamp']).strftime('%Y-%m-%dT%H:%M:%S%z')
-                            vv = v['value']
+                            vv = round(v['value'], 2)
                             derParameter = DERGroupStatuses.DERMonitorableParameter()
                             curve = DERGroupStatuses.DERCurveData(nominalYValue=vv, timeStamp=tt)
                             derParameter.DERCurveData = curve
@@ -676,59 +677,68 @@ class QueryDERGroupStatusesService(ServiceBase):
         return re
 
 
-    @staticmethod
-    def build_response_payload(groups):
-        endgroups = []
-        for g in groups['data']['results']['bindings']:
-            mRID = None
-            if 'mRID' in g:
-                mRID = g['mRID']['value']
-            description = None
-            if 'description' in g:
-                description = g['description']['value']
-            names = g['names']['value']
-            name = []
-            if names:
-                nms = names.split('\n')
-                for nm in nms:
-                    name.append(Name(name=nm))
-            devices = g['devices']['value']
-            endDevices = []
-            if devices:
-                dvcs = devices.split('\n')
-                for dd in dvcs:
-                    ids = dd.split(',')
-                    endDevices.append(EndDevice(mRID=ids[0], names=[Name(name=ids[1])], isSmart=ids[2]))
-            funcs = g['funcs']['value']
-            derfuncs = dict()
-            if funcs:
-                fs = funcs.split('\n')
-                for ff in fs:
-                    func = ff.split(',')
-                    if func[1] == 'true':
-                        derfuncs[func[0]] = True
-                    else:
-                        derfuncs[func[0]] = False
-                derfunc = DERFunction(connectDisconnect=derfuncs['connectDisconnect'],
-                                      frequencyWattCurveFunction=derfuncs['frequencyWattCurveFunction'],
-                                      maxRealPowerLimiting=derfuncs['maxRealPowerLimiting'],
-                                      rampRateControl=derfuncs['rampRateControl'],
-                                      reactivePowerDispatch=derfuncs['reactivePowerDispatch'],
-                                      realPowerDispatch=derfuncs['realPowerDispatch'],
-                                      voltageRegulation=derfuncs['voltageRegulation'],
-                                      voltVarCurveFunction=derfuncs['voltVarCurveFunction'],
-                                      voltWattCurveFunction=derfuncs['voltWattCurveFunction'])
-            else:
-                derfunc = None
-            newgroup = EndDeviceGroup(mRID=mRID, description=description, endDevices=endDevices, names=name,
-                                  DERFunction=derfunc)
-            endgroups.append(newgroup)
-        if endgroups:
-            dergroups = DERGroups(endDeviceGroup=endgroups)
-        else:
-            dergroups = DERGroups(endDeviceGroup=None)
+    # @staticmethod
+    # def build_response_payload(groups):
+    #     endgroups = []
+    #     for g in groups['data']['results']['bindings']:
+    #         mRID = None
+    #         if 'mRID' in g:
+    #             mRID = g['mRID']['value']
+    #         description = None
+    #         if 'description' in g:
+    #             description = g['description']['value']
+    #         names = g['names']['value']
+    #         name = []
+    #         if names:
+    #             nms = names.split('\n')
+    #             for nm in nms:
+    #                 name.append(Name(name=nm))
+    #         devices = g['devices']['value']
+    #         endDevices = []
+    #         if devices:
+    #             dvcs = devices.split('\n')
+    #             for dd in dvcs:
+    #                 ids = dd.split(',')
+    #                 endDevices.append(EndDevice(mRID=ids[0], names=[Name(name=ids[1])], isSmart=ids[2]))
+    #         funcs = g['funcs']['value']
+    #         derfuncs = dict()
+    #         if funcs:
+    #             fs = funcs.split('\n')
+    #             for ff in fs:
+    #                 func = ff.split(',')
+    #                 if func[1] == 'true':
+    #                     derfuncs[func[0]] = True
+    #                 else:
+    #                     derfuncs[func[0]] = False
+    #             derfunc = DERFunction(connectDisconnect=derfuncs['connectDisconnect'],
+    #                                   frequencyWattCurveFunction=derfuncs['frequencyWattCurveFunction'],
+    #                                   maxRealPowerLimiting=derfuncs['maxRealPowerLimiting'],
+    #                                   rampRateControl=derfuncs['rampRateControl'],
+    #                                   reactivePowerDispatch=derfuncs['reactivePowerDispatch'],
+    #                                   realPowerDispatch=derfuncs['realPowerDispatch'],
+    #                                   voltageRegulation=derfuncs['voltageRegulation'],
+    #                                   voltVarCurveFunction=derfuncs['voltVarCurveFunction'],
+    #                                   voltWattCurveFunction=derfuncs['voltWattCurveFunction'])
+    #         else:
+    #             derfunc = None
+    #         newgroup = EndDeviceGroup(mRID=mRID, description=description, endDevices=endDevices, names=name,
+    #                               DERFunction=derfunc)
+    #         endgroups.append(newgroup)
+    #     if endgroups:
+    #         dergroups = DERGroups(endDeviceGroup=endgroups)
+    #     else:
+    #         dergroups = DERGroups(endDeviceGroup=None)
+    #
+    #     re = DERGroupQueriesPayloadType(dERGroups=dergroups)
+    #     return re
 
-        re = DERGroupQueriesPayloadType(dERGroups=dergroups)
+
+class QueryDERGroupForecastsService(ServiceBase):
+    @rpc(HeaderType, DERGroupForecastQueriesRequestType, _returns=DERGroupForecastQueriesResponseMessageType)
+    def QueryDERGroupForecasts(ctx, Header=None, Request=None, **kwargs):
+        print(Header)
+        print(Request)
+        re = DERGroupForecastQueriesResponseMessageType
         return re
 
 
@@ -807,6 +817,13 @@ queryDERGroupStatuses = Application(
     in_protocol=Soap11(validator='lxml'),
     out_protocol=Soap11()
 )
+queryDERGroupForecasts = Application(
+    services=[QueryDERGroupForecastsService],
+    tns='der.pnnl.gov',
+    name='QueryDERGroupForecastsService',
+    in_protocol=Soap11(validator='lxml'),
+    out_protocol=Soap11()
+)
 # intr = getDevices.interface
 # imports = intr.imports
 #
@@ -868,7 +885,8 @@ wsgi_app_get_sub = WsgiMounter({
     # 'getDERGroups': getDERGroups,
     'queryDERGroups': queryDERGroups,
     'queryDERGroupStatuses': queryDERGroupStatuses,
-    'getModels': getModels
+    'getModels': getModels,
+    'queryDERGroupForecasts' : queryDERGroupForecasts
 })
 
 wsgi_app = WsgiMounter({
@@ -921,6 +939,7 @@ if __name__ == '__main__':
     logging.info("ExecuteDERGroupsService wsdl is at: http://localhost:8008/change/executeDERGroups?wsdl")
     logging.info("QueryDERGroupsService wsdl is at: http://localhost:8008/get/queryDERGroups?wsdl")
     logging.info("QueryDERGroupStatusesService wsdl is at: http://localhost:8008/get/queryDERGroupStatuses?wsdl")
+    logging.info("QueryDERGroupForecastsService wsdl is at: http://localhost:8008/get/queryDERGroupForecasts?wsdl")
 
     logging.info("CreateDERGroupDispatchesService wsdl is at: http://localhost:8008/create/executeDERGroupDispatches?wsdl")
 

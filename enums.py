@@ -12,7 +12,8 @@ DERParameterKind = Enum(
     'lowFilterDownRegulation',
     'lowFilterUpRegulation',
     'reactivePower',
-    'voltage', type_name='DERParameterKind')
+    'voltage',
+    'state of charge', type_name='DERParameterKind')
 
 
 """The units defined for usage in the CIM."""
