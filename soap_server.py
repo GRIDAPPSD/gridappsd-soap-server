@@ -48,10 +48,6 @@ from DERGroupStatusQueriesMessage import DERGroupStatusQueriesResponseMessageTyp
 conn = GridAPPSD(username="system", password="manager")
 simulation_id = None
 
-# conn.subscribe()
-
-# Devices = []
-
 
 def get_DERM_devices():
     # payload = conn._build_query_payload('QUERY', queryString=Queries.querySynchronousMachine)
@@ -100,6 +96,19 @@ def _build_reply(result, errorCode, errorLevel=None, reason=None):
     return reply
 
 
+def dispatchDERgroup(DERGroupDispatch, simulation_id):
+
+    # query corresponding equipment of each enddevice
+    group = DERGroupDispatch.EndDeviceGroup
+    group_mrid = group.mRID
+    group_name = group.Names.name
+
+    device_list = []  # enddevice in blazegraph (each enddevice shares the usagepoint with one equipment)
+    object_list = []  # object in PowerGrid API or equipment in blazegraph
+
+    # find p, q, rateS, ratedU of each equipment
+
+
 class ExecuteSimulationService(ServiceBase):
 
     @rpc(Unicode)
@@ -110,6 +119,7 @@ class ExecuteSimulationService(ServiceBase):
             simulation_id = id
 
         # print(simulation_id)
+
 
 class GetModelsService(ServiceBase):
 
@@ -236,10 +246,19 @@ class CreateDERGroupDispatchesService(ServiceBase):
                     i.mRID = str(uuid.uuid4())
                     re.Payload = Payload
 
+            # query the running simulation id
+            global simulation_id
+            message = {
+                "query": "select process_id from log where process_type like \"%goss.gridappsd.process.request.simulation%\" order by timestamp desc limit 1"}
+            response_obj = conn.get_response(t.LOGS, message)
+            if 'data' in response_obj.keys() and len(response_obj["data"]) > 0:
+                simulation = response_obj["data"][0]
+                if 'process_id' in simulation:
+                    simulation_id = simulation['process_id']
+
             # execute each dispatch
             try:
-                # dispatchDERgroup(i)
-                pass
+                dispatchDERgroup(i, simulation_id)
             except SamemRIDException:
                 error = True
                 eid = UUIDWithAttribute(objectType="DERGroupDispatch", value=i.mRID, kind=IDKindType.UUID)
@@ -552,6 +571,7 @@ queryDERGroupStatuses = Application(
     in_protocol=Soap11(validator='lxml'),
     out_protocol=Soap11()
 )
+
 # intr = getDevices.interface
 # imports = intr.imports
 #
