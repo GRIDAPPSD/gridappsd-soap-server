@@ -19,7 +19,7 @@ import pprint
 import uuid
 import DERGroupStatuses
 from lxml import etree
-
+from statistics import mean
 # from spyne import Application, ServiceBase, Unicode, rpc
 
 from spyne import Application, Service, ComplexModel, rpc, ServiceBase, Iterable, Integer, Unicode, util, xml, AnyXml, \
@@ -41,12 +41,16 @@ from message import ReplyType, HeaderType, ResultType, ErrorType, LevelType, UUI
 from ExecuteDERGroupsCommands import insertEndDeviceGroup, deleteDERGroupByMrid, deleteDERGroupByName, modifyDERGroup
 from DERGroupsMessage import DERGroupsPayloadType, DERGroupsResponseMessageType, DERGroupsRequestMessageType
 from DERGroupDispatchesMessage import DERGroupDispatchesPayloadType, DERGroupDispatchesResponseMessageType
-from datetime import datetime
+from datetime import datetime, timedelta
 from DERGroupQueries import DERGroupQueries
 from DERGroupQueriesMessage import DERGroupQueriesResponseMessageType, DERGroupQueriesRequestType, \
     DERGroupQueriesPayloadType
 from DERGroupStatusQueriesMessage import DERGroupStatusQueriesResponseMessageType, DERGroupStatusQueriesRequestType, DERGroupStatusQueriesPayloadType
 from DERGroupForecastQueriesMessage import DERGroupForecastQueriesResponseMessageType, DERGroupForecastQueriesRequestType, DERGroupForecastQueriesPayloadType
+from DERGroupForecastQueries import TimeIntervalKind
+import DERGroupForecasts
+from enums import UnitMultiplier, DERUnitSymbol, DERParameterKind
+import numpy as np
 
 conn = GridAPPSD(username="system", password="manager")
 simulation_id = None
@@ -653,7 +657,7 @@ class QueryDERGroupStatusesService(ServiceBase):
                             # # Switch current measurements (A)
                             # A_obj = [k for k in measurements_obj if k['type'] == 'A']
                         for k, v in parametersDict.items():
-                            tt = datetime.fromtimestamp(v['timestamp']).strftime('%Y-%m-%dT%H:%M:%S%z')
+                            tt = datetime.utcfromtimestamp(v['timestamp']).strftime('%Y-%m-%dT%H:%M:%S%z')
                             vv = round(v['value'], 2)
                             derParameter = DERGroupStatuses.DERMonitorableParameter()
                             curve = DERGroupStatuses.DERCurveData(nominalYValue=vv, timeStamp=tt)
@@ -733,12 +737,278 @@ class QueryDERGroupStatusesService(ServiceBase):
     #     return re
 
 
+def _get_unit_by_derParameter(param):
+    if param == DERParameterKind.activePower:
+        return 'W'
+    elif param == DERParameterKind.apparentPower:
+        return 'VA'
+    elif param == DERParameterKind.reactivePower:
+        return 'VAr'
+    elif param == DERParameterKind.voltage:
+        return 'V'
+    elif param == DERParameterKind.stateOfCharge:
+        return ''
+    else:
+        return ''
+
+
+def _derFunction_parameter_convert(param):
+    if param == 'reactivePowerDispatch':
+        return DERParameterKind.reactivePower
+    elif param == 'realPowerDispatch':
+        return DERParameterKind.activePower
+    elif param == 'voltageRegulation':
+        return DERParameterKind.voltage
+    else:
+        return param
+
+
+# def adjusted_mps(mps):
+#     return mps * (wtg_h2/wtg_h1) ** wtg_alpha
+
+
+def _get_hub_kw(mps):
+    return np.interp (mps,
+    [0.0,2.9,3.0,3.5,4.0,4.5,5.0,5.5,6.0,6.5, 7.0, 7.5, 8.0, 8.5, 9.0, 9.5,10.0,10.5,11.0,24.9,25.0,100.0],
+    [ 0, 0, 25, 89,171,269,389,533,704,906,1136,1400,1674,1934,2160,2316,2416,2477,2514,2530, 0, 0], 0, 0)
+
+
+# def get_wind_est (mps):
+#     est = 0.0
+#     if use_wtg:
+#         hub_mps = adjusted_mps (mps)
+#         est = get_hub_kw (hub_mps)
+#     if est <= 0.0:
+#         est = 1.0 # a negligible kW value; it can not be zero
+#     return est
+
+
 class QueryDERGroupForecastsService(ServiceBase):
     @rpc(HeaderType, DERGroupForecastQueriesRequestType, _returns=DERGroupForecastQueriesResponseMessageType)
     def QueryDERGroupForecasts(ctx, Header=None, Request=None, **kwargs):
         print(Header)
         print(Request)
+        names = []
+        mRIDs = []
+        if Request.DERGroupForecastQueries.EndDeviceGroup:
+            for group in Request.DERGroupForecastQueries.EndDeviceGroup:
+                if group:
+                    if group.Names:
+                        for name in group.Names:
+                            names.append(name.name)
+                            print(name.name)
+                    elif group.mRID:
+                        mRIDs.append(str(group.mRID))
+                        print(group.mRID)
+        query = ""
+        if names:
+            # b = "\"" + "\" \"".join(names) + "\""
+            query = Queries.queryEquipmentWithDERfuncsByName.format(groupnames="\"" + "\" \"".join(names) + "\"")
+        if mRIDs:
+            query = Queries.queryEquipmentWithDERfuncsBymRID.format(mRIDs="\"" + "\" \"".join(mRIDs) + "\"")
+        success = False
+        try:
+            groups = conn.query_data(query)
+            success = True
+        except Exception as e:
+            pass
+
         re = DERGroupForecastQueriesResponseMessageType
+        reheader = _build_response_header(VerbType.REPLY)
+        re.Header = reheader
+
+        derParameters = []
+        if Request.DERGroupForecastQueries.DERMonitorableParameter:
+            for para in Request.DERGroupForecastQueries.DERMonitorableParameter:
+                derParameters.append(para.DERParameter)
+
+        weatherDict = {}
+        if Request.DERGroupForecastQueries.DispatchSchedule:
+            for schdl in Request.DERGroupForecastQueries.DispatchSchedule:
+                startT = schdl.startTime.replace(year=2013)
+                start_time = int((startT - datetime(1970, 1, 1)).total_seconds())
+                interval = schdl.numberOfIntervals
+                duration = schdl.timeIntervalDuration
+                unit = schdl.timeIntervalUnit
+                curvetype = schdl.curveStyleKind
+                multiplier = 1
+                if unit == TimeIntervalKind.s:
+                    end_time = start_time + interval * multiplier * duration
+                elif unit == TimeIntervalKind.m:
+                    multiplier = 60
+                    end_time = start_time + interval * multiplier * duration
+                elif unit == TimeIntervalKind.h:
+                    multiplier = 3600
+                    end_time = start_time + interval * multiplier * duration
+                elif unit == TimeIntervalKind.D:
+                    multiplier = 86400
+                    end_time = start_time + interval * multiplier * duration
+                # elif unit == TimeIntervalKind.M:
+                #     end_time = int((schedule.startTime + timedelta(months=interval * duration) - datetime(1970,1,1)).total_seconds())
+                # elif unit == TimeIntervalKind.Y:
+                #     multiplier = 86400
+
+                print(start_time)
+                # if 'data' in sim_data and len(sim_data['data']) > 0:
+                #     start_time = sim_data['data'][-f1]['time']
+                message3 = {
+                    "queryMeasurement": "weather",
+                    "queryFilter": {
+                        "startTime": str(start_time * 1000000),
+                        "endTime": str(end_time * 1000000)},
+                    "responseFormat": "JSON"
+                }
+                weather3 = conn.get_response(t.TIMESERIES, message3)
+                weatherDict = {}
+                if 'data' in weather3:
+                    intvl = 1
+                    for w in weather3['data']:
+                        diffused = w['Diffuse']
+                        direct = w['DirectCH1']
+                        wind = w['AvgWindSpeed']
+                        if w['time'] < start_time + intvl * multiplier * duration:
+                            pass
+                        else:
+                            intvl += 1
+                        if intvl not in weatherDict:
+                            weatherDict[intvl] = {}
+                        if 'solar' not in weatherDict[intvl]:
+                            weatherDict[intvl]['solar'] = []
+                        if 'wind' not in weatherDict[intvl]:
+                            weatherDict[intvl]['wind'] = []
+                        weatherDict[intvl]['wind'].append(_get_hub_kw(wind))
+                        weatherDict[intvl]['solar'].append((diffused + direct) * 0.010763867)
+
+                # message1 = {
+                #     "queryMeasurement": "weather",
+                #     "queryFilter": {
+                #         "startTime": "1357048800000000",
+                #         "endTime": "1357048860000000"},
+                #     "responseFormat": "JSON"
+                # }
+                # weather1 = conn.get_response(t.TIMESERIES, message1)
+                #
+                # message2 = {
+                #     "queryMeasurement": "weather",
+                #     "queryFilter": {
+                #         "startTime": str(start_time * 1000000),
+                #         "endTime": str((start_time + 60) * 1000000)},
+                #     "responseFormat": "JSON"
+                # }
+                # weather2 = conn.get_response(t.TIMESERIES, message2)
+                print('weather queries done.')
+
+        if success:
+            payload = DERGroupForecastQueriesPayloadType()
+            derforecasts = DERGroupForecasts.DERGroupForecasts()
+            payload.DERGroupForecasts = derforecasts
+            reply = _build_reply(ResultType.OK, '0.0')
+
+            # message = {"query":"select process_id from log where process_type like \"%goss.gridappsd.process.request.simulation%\" order by timestamp desc limit 1"}
+            # response_obj = conn.get_response(t.LOGS, message)
+            # if 'data' in response_obj.keys() and len(response_obj["data"]) > 0:
+            #     simulation = response_obj["data"][0]
+            #     if 'process_id' in simulation:
+            #         simulation_id = simulation['process_id']
+            # message = {
+            #     "queryMeasurement": "simulation",
+            #     "queryFilter": {"simulation_id": simulation_id},
+            #     "responseFormat": "JSON"
+            # }
+            # sim_data = conn.get_response(t.TIMESERIES, message)
+            if 'data' in groups and 'results' in groups['data'] and 'bindings' in groups['data']['results']:
+                forecasts = []
+                for g in groups['data']['results']['bindings']:
+                    eddvgrps = DERGroupForecasts.EndDeviceGroup()
+                    if 'names' in g and 'value' in g['names']:
+                        names = g['names']['value']
+                        name = []
+                        if names:
+                            nms = names.split('\n')
+                            for nm in nms:
+                                name.append(Name(name=nm))
+                            eddvgrps.Names = name
+                    forecast = DERGroupForecasts.DERGroupForecastClass(mRID=uuid.uuid4(), predictionCreationDate=datetime.now(), endDeviceGroup=eddvgrps)
+                    forecasts.append(forecast)
+                    dmps = []
+                    eddvgrps.DERMonitorableParameter = dmps
+                    if 'tfuncs' in g and 'value' in g['tfuncs']:
+                        funcs = g['tfuncs']['value']
+                        if funcs:
+                            fncs = funcs.split('\n')
+                            for f in fncs:
+                                fs = f.split(',')
+                                parameter = _derFunction_parameter_convert(fs[0])
+                                if parameter in derParameters and fs[1] == 'true':
+                                    uu = _get_unit_by_derParameter(parameter)
+                                    dmp = DERGroupForecasts.DERMonitorableParameter(DERParameter=parameter, yMultiplier='k', yUnit=uu)
+                                    dmps.append(dmp)
+                                    if Request.DERGroupForecastQueries.DispatchSchedule:
+                                        schedules = []
+                                        dmp.DispatchSchedule = schedules
+                                        for schedule in Request.DERGroupForecastQueries.DispatchSchedule:
+                                            start_time = schedule.startTime
+                                            interval = schedule.numberOfIntervals
+                                            duration = schedule.timeIntervalDuration
+                                            unit = schedule.timeIntervalUnit
+                                            nminutes = duration
+                                            if unit == TimeIntervalKind.h:
+                                                nminutes = 60 * duration
+                                            elif unit == TimeIntervalKind.D:
+                                                nminutes = 1440 * duration
+                                            curvetype = schedule.curveStyleKind
+                                            dispatch = DERGroupForecasts.DispatchSchedule(curveStyleKind=curvetype, startTime=start_time, timeIntervalDuration=duration, timeIntervalUnit=unit)
+                                            schedules.append(dispatch)
+                                            curveData = []
+                                            dispatch.DERCurveData = curveData
+                                            for i in range(interval):
+                                                data = DERGroupForecasts.DERCurveData(intervalNumber=i+1)
+                                                curveData.append(data)
+                                                power = [0.0] * nminutes
+                                                if 'equipIDs' in g and 'value' in g['equipIDs']:
+                                                    equips = g['equipIDs']['value']
+                                                    if equips:
+                                                        eqps = equips.split('\n')
+                                                        for e in eqps:
+                                                            es = e.split(',')
+                                                            eid = es[0]
+                                                            te = es[1]
+                                                            if te == 'PowerElectronicsConnection':
+                                                                query = Queries.queryPECproperties.format(equipid="\"" + eid + "\"")
+                                                            elif te == 'SynchronousMachine':
+                                                                query = Queries.querySynchronousMachineProperties.format(mrid="\"" + eid + "\"")
+                                                            else:
+                                                                pass
+                                                            properties = conn.query_data(query)
+                                                            if 'data' in properties and 'results' in properties['data'] and 'bindings' in properties['data']['results']:
+                                                                if len(properties['data']['results']['bindings']) == 1 and 'type' in properties['data']['results']['bindings'][0]:
+                                                                    tp = properties['data']['results']['bindings'][0]['type']['value']
+                                                                    if tp == 'SynchronousMachine':
+                                                                        p = float(properties['data']['results']['bindings'][0]['p']['value'])
+                                                                        power = [sum(x) for x in zip(power, weatherDict[i+1]['wind'])]
+                                                                    elif tp == 'BatteryUnit':
+                                                                        p = float(properties['data']['results']['bindings'][0]['p']['value'])
+                                                                    elif tp == 'PhotovoltaicUnit':
+                                                                        pv = float(properties['data']['results']['bindings'][0]['p']['value'])
+                                                                        power = [sum(x) for x in zip(power, [x * pv for x in weatherDict[i+1]['solar']])]
+                                                                        # data.maxYValue = max(power)
+                                                                        # data.minYValue = min(power)
+                                                                        # data.nominalYValue = mean(power)
+                                                                    else:
+                                                                        pass
+
+                                                data.maxYValue = max(power)
+                                                data.minYValue = min(power)
+                                                data.nominalYValue = mean(power)
+                derforecasts.DERGroupForecast = forecasts
+
+
+
+        else:
+            payload = None
+            reply = _build_reply(ResultType.FAILED, '6.1')
+        re.Payload = payload
+        re.Reply = reply
         return re
 
 

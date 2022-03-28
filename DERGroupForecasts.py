@@ -66,9 +66,9 @@ class DERMonitorableParameter(ComplexModel):
         ('DispatchSchedule', DispatchSchedule.customize(max_occurs='unbounded', min_occurs=1))
     ]
 
-    def __init__(self, dERParameter=None, flowDirection=None, yMultiplier=None, yUnit=None, yUnitInstalledMax=None, yUnitInstalledMin=None, dispatchSchedule=None, **kwargs):
-        super().__init__(DERParameter=dERParameter, flowDirection=flowDirection, yMultiplier=yMultiplier, yUnit=yUnit, yUnitInstalledMax=yUnitInstalledMax, yUnitInstalledMin=yUnitInstalledMin, DispatchSchedule=dispatchSchedule, **kwargs)
-        self.DERParameter = dERParameter
+    def __init__(self, DERParameter=None, flowDirection=None, yMultiplier=None, yUnit=None, yUnitInstalledMax=None, yUnitInstalledMin=None, dispatchSchedule=None, **kwargs):
+        super().__init__(DERParameter=DERParameter, flowDirection=flowDirection, yMultiplier=yMultiplier, yUnit=yUnit, yUnitInstalledMax=yUnitInstalledMax, yUnitInstalledMin=yUnitInstalledMin, DispatchSchedule=dispatchSchedule, **kwargs)
+        self.DERParameter = DERParameter
         self.flowDirection = flowDirection
         self.yMultiplier = yMultiplier
         self.yUnit = yUnit
@@ -108,7 +108,7 @@ class EndDeviceGroup(ComplexModel):
 # end class EndDeviceGroup
 
 
-class DERGroupForecast(ComplexModel):
+class DERGroupForecastClass(ComplexModel):
     """mRID -- Master resource identifier issued by a model authority. The mRID is unique within an exchange context. Global uniqueness is easily achieved by using a UUID,  as specified in RFC 4122, for the mRID. The use of UUID is strongly recommended.
     For CIMXML data files in RDF syntax conforming to IEC 61970-552 Edition 1, the mRID is mapped to rdf:ID or rdf:about attributes that identify CIM object elements.
     Names -- All names of this identified object.
@@ -139,15 +139,15 @@ class DERGroupForecast(ComplexModel):
 
 class DERGroupForecasts(ComplexModel):
     _type_info = [
-        ('DERGroupForecast', DERGroupForecast.customize(max_occurs='unbounded', min_occurs=1))
+        ('DERGroupForecast', DERGroupForecastClass.customize(max_occurs='unbounded', min_occurs=1))
     ]
 
-    def __init__(self, dERGroupForecast=None, **kwargs):
-        super().__init__(EndDeviceGroup=dERGroupForecast, **kwargs)
-        if dERGroupForecast is None:
+    def __init__(self, DERGroupForecast=None, **kwargs):
+        super().__init__(EndDeviceGroup=DERGroupForecast, **kwargs)
+        if DERGroupForecast is None:
             self.DERGroupForecast = []
         else:
-            self.DERGroupForecast = dERGroupForecast
+            self.DERGroupForecast = DERGroupForecast
 # end class DERGroupForecasts
 
 
