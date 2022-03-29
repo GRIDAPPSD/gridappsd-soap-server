@@ -740,12 +740,12 @@ class QueryDERGroupStatusesService(ServiceBase):
 def _get_unit_by_derParameter(param):
     if param == DERParameterKind.activePower:
         return 'W'
-    elif param == DERParameterKind.apparentPower:
-        return 'VA'
+    # elif param == DERParameterKind.apparentPower:
+    #     return 'VA'
     elif param == DERParameterKind.reactivePower:
         return 'VAr'
-    elif param == DERParameterKind.voltage:
-        return 'V'
+    # elif param == DERParameterKind.voltage:
+    #     return 'V'
     elif param == DERParameterKind.stateOfCharge:
         return ''
     else:
@@ -757,8 +757,8 @@ def _derFunction_parameter_convert(param):
         return DERParameterKind.reactivePower
     elif param == 'realPowerDispatch':
         return DERParameterKind.activePower
-    elif param == 'voltageRegulation':
-        return DERParameterKind.voltage
+    # elif param == 'voltageRegulation':
+    #     return DERParameterKind.voltage
     else:
         return param
 
@@ -965,38 +965,38 @@ class QueryDERGroupForecastsService(ServiceBase):
                                                 data = DERGroupForecasts.DERCurveData(intervalNumber=i+1)
                                                 curveData.append(data)
                                                 power = [0.0] * nminutes
-                                                if 'equipIDs' in g and 'value' in g['equipIDs']:
-                                                    equips = g['equipIDs']['value']
-                                                    if equips:
-                                                        eqps = equips.split('\n')
-                                                        for e in eqps:
-                                                            es = e.split(',')
-                                                            eid = es[0]
-                                                            te = es[1]
-                                                            if te == 'PowerElectronicsConnection':
-                                                                query = Queries.queryPECproperties.format(equipid="\"" + eid + "\"")
-                                                            elif te == 'SynchronousMachine':
-                                                                query = Queries.querySynchronousMachineProperties.format(mrid="\"" + eid + "\"")
-                                                            else:
-                                                                pass
-                                                            properties = conn.query_data(query)
-                                                            if 'data' in properties and 'results' in properties['data'] and 'bindings' in properties['data']['results']:
-                                                                if len(properties['data']['results']['bindings']) == 1 and 'type' in properties['data']['results']['bindings'][0]:
-                                                                    tp = properties['data']['results']['bindings'][0]['type']['value']
-                                                                    if tp == 'SynchronousMachine':
-                                                                        p = float(properties['data']['results']['bindings'][0]['p']['value'])
-                                                                        power = [sum(x) for x in zip(power, weatherDict[i+1]['wind'])]
-                                                                    elif tp == 'BatteryUnit':
-                                                                        p = float(properties['data']['results']['bindings'][0]['p']['value'])
-                                                                    elif tp == 'PhotovoltaicUnit':
-                                                                        pv = float(properties['data']['results']['bindings'][0]['p']['value'])
-                                                                        power = [sum(x) for x in zip(power, [x * pv for x in weatherDict[i+1]['solar']])]
-                                                                        # data.maxYValue = max(power)
-                                                                        # data.minYValue = min(power)
-                                                                        # data.nominalYValue = mean(power)
-                                                                    else:
-                                                                        pass
-
+                                                if parameter == DERParameterKind.activePower:
+                                                    if 'equipIDs' in g and 'value' in g['equipIDs']:
+                                                        equips = g['equipIDs']['value']
+                                                        if equips:
+                                                            eqps = equips.split('\n')
+                                                            for e in eqps:
+                                                                es = e.split(',')
+                                                                eid = es[0]
+                                                                te = es[1]
+                                                                if te == 'PowerElectronicsConnection':
+                                                                    query = Queries.queryPECproperties.format(equipid="\"" + eid + "\"")
+                                                                elif te == 'SynchronousMachine':
+                                                                    query = Queries.querySynchronousMachineProperties.format(mrid="\"" + eid + "\"")
+                                                                else:
+                                                                    pass
+                                                                properties = conn.query_data(query)
+                                                                if 'data' in properties and 'results' in properties['data'] and 'bindings' in properties['data']['results']:
+                                                                    if len(properties['data']['results']['bindings']) == 1 and 'type' in properties['data']['results']['bindings'][0]:
+                                                                        tp = properties['data']['results']['bindings'][0]['type']['value']
+                                                                        if tp == 'SynchronousMachine':
+                                                                            p = float(properties['data']['results']['bindings'][0]['p']['value'])
+                                                                            power = [sum(x) for x in zip(power, weatherDict[i+1]['wind'])]
+                                                                        elif tp == 'BatteryUnit':
+                                                                            p = float(properties['data']['results']['bindings'][0]['p']['value'])
+                                                                        elif tp == 'PhotovoltaicUnit':
+                                                                            pv = float(properties['data']['results']['bindings'][0]['p']['value'])
+                                                                            power = [sum(x) for x in zip(power, [x * pv for x in weatherDict[i+1]['solar']])]
+                                                                            # data.maxYValue = max(power)
+                                                                            # data.minYValue = min(power)
+                                                                            # data.nominalYValue = mean(power)
+                                                                        else:
+                                                                            pass
                                                 data.maxYValue = max(power)
                                                 data.minYValue = min(power)
                                                 data.nominalYValue = mean(power)
