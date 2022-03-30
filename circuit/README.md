@@ -1,6 +1,6 @@
 # Creating Test Circuit for DERMS Interop
 
-Copyright (c) 2017-2021, Battelle Memorial Institute
+Copyright (c) 2017-2022, Battelle Memorial Institute
 
 ## Contents
 
@@ -102,16 +102,16 @@ WITH DER and WITH HOUSES (GridLAB-D only)
     Total S =   932.303 + j    25.174
   OpenDSS branch flow in LINE.LINE_L114 from NODE_135, Converted case
   Phs     Volts     rad      Amps     rad         kW          kVAR   PhsPhs     Volts     rad
-    A   2440.46  0.0087     24.25 -0.0719     58.992 + j     4.767     AB     4215.11  0.5354
-    B   2436.59 -2.0787     17.82 -2.1522     43.298 + j     3.187     BC     4213.28 -1.5549
-    C   2430.94  2.1118     12.83  2.0282     31.079 + j     2.604     CA     4229.35  2.6322
-    Total S =   133.369 + j    10.559
+    A   2440.15  0.0087     24.25 -0.0721     58.991 + j     4.777     AB     4214.67  0.5354
+    B   2436.39 -2.0787     17.82 -2.1523     43.298 + j     3.195     BC     4212.93 -1.5549
+    C   2430.74  2.1118     12.83  2.0279     31.078 + j     2.615     CA     4228.90  2.6322
+    Total S =   133.366 + j    10.587
   GridLAB-D branch flow in LINE_LINE_L114 from NODE_135
   Phs     Volts     rad      Amps     rad         kW          kVAR   PhsPhs     Volts     rad
-    A   2365.35 -0.0079     90.80 -0.5735    181.334 + j   115.096     AB     4122.36  0.5292
-    B   2415.24  4.1957     72.74  3.5972    145.152 + j    98.979     BC     4142.99 -1.5677
-    C   2372.53  2.1041     70.28  1.5830    144.609 + j    83.008     CA     4123.87  2.6180
-    Total S =   471.094 + j   297.083
-Transactive      Nbus=[  3036,  3036,  7882] Nlink=[  5507,  7787,   690] MAEv=[ 0.0467, 0.0140] MAEi=[   8.0245,  42.8178]
+    A   2366.61 -0.0079     89.30 -0.5756    178.172 + j   113.640     AB     4124.64  0.5296
+    B   2417.36  4.1963     70.99  3.5949    141.505 + j    97.088     BC     4145.60 -1.5672
+    C   2373.35  2.1047     70.29  1.5836    144.680 + j    83.033     CA     4126.24  2.6184
+    Total S =   464.357 + j   293.761
+Transactive      Nbus=[  3036,  3036,  7882] Nlink=[  5507,  7787,   690] MAEv=[ 0.0465, 0.0149] MAEi=[   8.0401,  42.6860]
 ```
 

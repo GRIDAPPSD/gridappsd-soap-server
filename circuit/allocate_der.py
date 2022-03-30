@@ -14,7 +14,7 @@ def create_der_list (cfg_file, froot, mRID, outpath, pv_size, pv_penetration):
   numpv = 0
   kw = 0.001 * pv_size
   kwmax = kw
-  kva = kwmax / math.sqrt(1-0.25*0.25)
+  kva = 1.01 * kwmax / math.sqrt(1-0.25*0.25)
   kv = 0.208
   kvar = 0.0
   cat = 'catA'
