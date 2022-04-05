@@ -10,10 +10,10 @@ import datetime as datetime_
 
 class DERGroupQueriesRequestType(ComplexModel):
     _type_info = [
-        ('StartTime', DateTime),
-        ('EndTime', DateTime),
-        ('Option', OptionType),
-        ('ID', Unicode),
+        ('StartTime', DateTime.customize(min_occurs=0)),
+        ('EndTime', DateTime.customize(min_occurs=0)),
+        ('Option', OptionType.customize(max_occurs='unbounded', min_occurs=0)),
+        ('ID', Unicode.customize(max_occurs='unbounded', min_occurs=0)),
         ('DERGroupQueries', DERGroupQueries),
         ('__ANY__', AnyDict),
     ]

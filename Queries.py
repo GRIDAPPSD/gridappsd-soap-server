@@ -327,7 +327,7 @@ PREFIX r: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
 PREFIX c: <http://iec.ch/TC57/CIM100#>
 PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
 SELECT DISTINCT ?fdr ?fdrid
-WHERE {
+WHERE {{
   ?s a c:EndDevice .
   ?s c:EndDevice.isSmartInverter ?issmart .
   ?s c:EndDevice.UsagePoint ?upraw .
@@ -336,9 +336,109 @@ WHERE {
   ?equip c:Equipment.EquipmentContainer ?container.
   ?container c:IdentifiedObject.name ?fdr .
   ?container c:IdentifiedObject.mRID ?fdrid .
-}
+}}
 ORDER by ?fdr
 """
 
 
+queryEquipmentByName = """#get all Equipment of EndDeviceGroup(s)
+PREFIX  xsd:  <http://www.w3.org/2001/XMLSchema#>
+PREFIX  r:    <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX  c:    <http://iec.ch/TC57/CIM100#>
+select ?mRID ?description ?modelID (group_concat(distinct ?name;separator="\\n") as ?names) 
+# 						  (group_concat(distinct ?device;separator="\\n") as ?devices)
+# 						  (group_concat(distinct ?func;separator="\\n") as ?funcs) 
+ 						  (group_concat(distinct ?equipID;separator="\\n") as ?equipIDs) 
+where {{
+  ?q1 a c:EndDeviceGroup .
+  ?q1 c:IdentifiedObject.mRID ?mRIDraw .
+    bind(strafter(str(?mRIDraw), "_") as ?mRID).
+  ?q1 c:IdentifiedObject.name ?name .
+  VALUES ?name {{{groupnames}}}
+  ?q1 c:IdentifiedObject.description ?description .
+  Optional{{
+  	?q1 c:EndDeviceGroup.EndDevice ?deviceobj .
+#    ?deviceobj c:IdentifiedObject.mRID ?deviceID .
+#    ?deviceobj c:IdentifiedObject.name ?deviceName .
+#    ?deviceobj c:EndDevice.isSmartInverter ?isSmart .
+    ?deviceobj c:EndDevice.UsagePoint ?usg .
+    ?equip c:Equipment.UsagePoint ?usg .
+#    ?equip a ?tequip .
+    ?equip c:Equipment.EquipmentContainer ?model .
+    bind(concat(strafter(str(?equip), "#")) as ?equipID) .
+#    bind(concat(strafter(str(?equip), "#"), ",", strafter(str(?tequip), "#")) as ?equipID) .
+    bind(strafter(str(?model), "#") as ?modelID) .
+  }}
+#  ?q1 c:DERFunction ?derFunc .
+#  ?derFunc ?pfunc ?vfuc .
+#  Filter(?pfunc !=r:type)
+#    bind(concat(strafter(str(?pfunc), "DERFunction."), ",", str(?vfuc)) as ?func)
+}}
+Group by ?mRID ?description ?modelID
+Order by ?mRID
+"""
 
+
+queryEquipmentBymRID = """#get all Equipment of EndDeviceGroup(s)
+PREFIX  xsd:  <http://www.w3.org/2001/XMLSchema#>
+PREFIX  r:    <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX  c:    <http://iec.ch/TC57/CIM100#>
+select ?mRID ?description ?modelID (group_concat(distinct ?name;separator="\\n") as ?names) 
+# 						  (group_concat(distinct ?device;separator="\\n") as ?devices)
+# 						  (group_concat(distinct ?func;separator="\\n") as ?funcs) 
+ 						  (group_concat(distinct ?equipID;separator="\\n") as ?equipIDs) 
+where {{
+  ?q1 a c:EndDeviceGroup .
+  ?q1 c:IdentifiedObject.mRID ?mRIDraw .
+    bind(strafter(str(?mRIDraw), "_") as ?mRID).
+  ?q1 c:IdentifiedObject.name ?name .
+  VALUES ?mRIDraw {{{mRIDs}}}
+  ?q1 c:IdentifiedObject.description ?description .
+  Optional{{
+  	?q1 c:EndDeviceGroup.EndDevice ?deviceobj .
+#    ?deviceobj c:IdentifiedObject.mRID ?deviceID .
+#    ?deviceobj c:IdentifiedObject.name ?deviceName .
+#    ?deviceobj c:EndDevice.isSmartInverter ?isSmart .
+    ?deviceobj c:EndDevice.UsagePoint ?usg .
+    ?equip c:Equipment.UsagePoint ?usg .
+#    ?equip a ?tequip .
+    ?equip c:Equipment.EquipmentContainer ?model .
+    bind(concat(strafter(str(?equip), "#")) as ?equipID) .
+#    bind(concat(strafter(str(?equip), "#"), ",", strafter(str(?tequip), "#")) as ?equipID) .
+    bind(strafter(str(?model), "#") as ?modelID) .
+  }}
+#  ?q1 c:DERFunction ?derFunc .
+#  ?derFunc ?pfunc ?vfuc .
+#  Filter(?pfunc !=r:type)
+#    bind(concat(strafter(str(?pfunc), "DERFunction."), ",", str(?vfuc)) as ?func)
+}}
+Group by ?mRID ?description ?modelID
+Order by ?mRID
+"""
+
+
+queryPowerElectronicsID = """#get PowerElectronicsConnection ID by Equipment ID
+PREFIX r: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX c: <http://iec.ch/TC57/CIM100#>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+SELECT ?name ?id ?pecname ?pecid
+WHERE {{
+  ?s c:IdentifiedObject.mRID ?id.
+    VALUES ?id {{{id}}}
+  ?s c:IdentifiedObject.name ?name.
+  ?s c:PowerElectronicsConnection.PowerElectronicsUnit ?pec.
+  ?pec c:IdentifiedObject.mRID ?pecid.
+  ?pec c:IdentifiedObject.name ?pecname.
+  #?pec r:type c:BatteryUnit.
+  #?pec r:type c:PhotovoltaicUnit.
+  #?s c:Equipment.EquipmentContainer ?fdr.
+  #?fdr c:IdentifiedObject.mRID ?feeder_mrid.
+  #?s c:PowerElectronicsConnection.ratedS ?ratedS.
+  #?s c:PowerElectronicsConnection.ratedU ?ratedU.
+  #?s c:PowerElectronicsConnection.maxIFault ?ipu.
+  #?s c:PowerElectronicsConnection.p ?p.
+  #?s c:PowerElectronicsConnection.q ?q.
+}}
+GROUP by ?name ?id ?pecname ?pecid
+ORDER by ?name
+"""

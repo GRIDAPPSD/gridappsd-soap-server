@@ -12,7 +12,7 @@ class DERGroupStatusQueriesFaultMessageType(ComplexModel):
 
     def __init__(self, reply=None, **kwargs):
         super().__init__(Reply=reply, **kwargs)
-        self.reply = reply
+        self.Reply = reply
 # end class DERGroupStatusQueriesFaultMessageType
 
 
@@ -37,16 +37,16 @@ class DERGroupStatusQueriesRequestType(ComplexModel):
             initvalue_ = datetime_.datetime.strptime(endTime, '%Y-%m-%dT%H:%M:%S')
         else:
             initvalue_ = endTime
-        self.endTime = initvalue_
+        self.EndTime = initvalue_
         if option is None:
-            self.option = []
+            self.Option = []
         else:
-            self.option = option
+            self.Option = option
         if id is None:
-            self.id = []
+            self.ID = []
         else:
-            self.id = id
-        self.dERGroupStatusQueries = dERGroupStatusQueries
+            self.ID = id
+        self.DERGroupStatusQueries = dERGroupStatusQueries
         # if anytypeobjs_ is None:
         #     self.anytypeobjs_ = []
         # else:
@@ -62,8 +62,8 @@ class DERGroupStatusQueriesRequestMessageType(ComplexModel):
 
     def __init__(self, header=None, request=None, **kwargs):
         super().__init__(Header=header, Request=request, **kwargs)
-        self.header = header
-        self.request = request
+        self.Header = header
+        self.Request = request
 # end class DERGroupStatusQueriesRequestMessageType
 
 
@@ -77,10 +77,10 @@ class DERGroupStatusQueriesPayloadType(ComplexModel):
 
     def __init__(self, dERGroupStatuses=None, operationSet=None, compressed=None, format=None, **kwargs):
         super().__init__(DERGroupStatuses=dERGroupStatuses, OperationSet=operationSet, Compressed=compressed, Format=format, **kwargs)
-        self.dERGroupStatuses = dERGroupStatuses
-        self.operationSet = operationSet
-        self.compressed = compressed
-        self.format = format
+        self.DERGroupStatuses = dERGroupStatuses
+        self.OperationSet = operationSet
+        self.Compressed = compressed
+        self.Format = format
 # end class DERGroupStatusQueriesPayloadType
 
 
@@ -93,9 +93,9 @@ class DERGroupStatusQueriesResponseMessageType(ComplexModel):
 
     def __init__(self, header=None, reply=None, payload=None, **kwargs):
         super().__init__(Header=header, Reply=reply, Payload=payload, **kwargs)
-        self.header = header
-        self.reply = reply
-        self.payload = payload
+        self.Header = header
+        self.Reply = reply
+        self.Payload = payload
 # end class DERGroupStatusQueriesResponseMessageType
 
 
