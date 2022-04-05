@@ -72,7 +72,7 @@ class DERGroupForecastQueriesPayloadType(ComplexModel):
 
     """
     _type_info = [
-        ('DERGroupStatuses', DERGroupForecasts.customize(min_occurs=0)),
+        ('DERGroupForecasts', DERGroupForecasts.customize(min_occurs=0)),
         ('OperationSet', OperationSet.customize(min_occurs=0)),
         ('Compressed', Unicode.customize(min_occurs=0)),
         ('Format', Unicode.customize(min_occurs=0))
