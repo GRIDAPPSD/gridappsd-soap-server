@@ -846,7 +846,7 @@ def start_server_proc():
 def __start_app__():
     import logging
     logging.basicConfig(level=logging.DEBUG)
-    app.run(host='0.0.0.0', port=8442, use_reloader=False, debug=True)
+    app.run(host='0.0.0.0', port=8442, use_reloader=False, debug=False)
 
 
 if __name__ == '__main__':
