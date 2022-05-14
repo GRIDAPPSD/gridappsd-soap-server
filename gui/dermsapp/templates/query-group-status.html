@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Query group status</title>
+    <script src="/js/jquery-3.4.1.min.js"></script>
+    <script>
+    $(document).ready(function() {
+//        var group1 = document.getElementsByName("group1");
+//        var group2 = document.getElementsByName("group2");
+
+//        var option, option_text;
+//        {% for group in groups %}
+//            //console.log(group.name)
+//            option = document.createElement("option");
+//            option.value = group.name;
+//            option_text = document.createTextNode(group.name);
+//            option.appendChild(option_text);
+//            option.form = "query";
+//            group1.appendChild(option);
+//            group2.appendChild(option);
+//        {% endfor %}
+
+//        for (var group in groups){
+//           //console.log(group.name)
+//            option = document.createElement("option");
+//            option.value = group.name;
+//            option_text = document.createTextNode(group.name);
+//            option.appendChild(option_text);
+//            option.form = "query";
+//            group1.appendChild(option);
+//            group2.appendChild(option);
+//        }
+
+//        var val = localStorage.getItem('groupBy');
+//        for (var i = 0; i < radios.length; i++) {
+//           if (radios[i].value == val) {
+//              radios[i].checked = true;
+//            }
+//        }
+//        $('input[name="groupBy"]').on('change', function() {
+//            localStorage.setItem('groupBy', $(this).val());
+//            changeDropDownMenu();
+//        });
+//        if($('input[name="groupBy"]:checked').length > 0){
+//            changeDropDownMenu();
+//        }
+    });
+
+    </script>
+</head>
+<body>
+    <a href="/menu">Home</a>&nbsp;&nbsp;
+    {% if not groups%}
+    <h1>No Groups Found</h1>
+    {% endif %}
+    {% if groups%}
+    <p>Choose one or two group(s) to query status:</p>
+    <form id="query" action="/get_group_status" method="post">
+        <select id="group1" name="group1" style="width:100px">
+        <option id="group1empty" name="group1empty" value=""></option>
+        {% for group in groups %}
+            <option id="group1option" name="{{group.name}}" value="{{group.name}}">{{group.name}}, {{group.mrid}}</option>
+        {% endfor %}
+        </select><br><br>
+        <select id="group2" name="group2" style="width:100px">
+        <option id="group2empty" name="group2empty" value=""></option>
+        {% for group in groups %}
+            <option id="group2option" name="{{group.name}}" value="{{group.name}}">{{group.name}}, {{group.mrid}}</option>
+        {% endfor %}
+        </select><br><br>
+        <input type="submit" value="Query Status">
+
+    </form>
+    {% endif %}
+</body>
+</html>

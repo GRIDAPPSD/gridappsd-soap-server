@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>DER UI Home</title>
+    <script src="/js/jquery-3.4.1.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            $('input[name="target"]').on('change', function() {
+                changeDropDownMenu();
+            });
+        });
+    </script>
+</head>
+<body>
+
+<!--<h2>Test Input</h2>-->
+<!--<div id="testTarget">-->
+<!--    Test:-->
+<!--    <input type="radio" id="epri" name="target" value="epri">-->
+<!--    <label for="epri">EPRI test harness</label>-->
+<!--    <input type="radio" id="gridappsd" name="target" value="gridappsd">-->
+<!--    <label for="gridappsd">GridAppsD</label><br>-->
+<!--</div><br>-->
+<br>
+<a href="/load_model">Load model</a><br>&nbsp;<br>
+<a href="/list_devices">Get Devices</a><br>&nbsp;<br>
+<!--<a href="/list_groups">List Groups</a><br>&nbsp;<br>-->
+<a href="/create_group">Create Group</a><br>&nbsp;<br>
+<a href="/edit_group">Edit Group</a><br>&nbsp;<br>
+<a href="/run_simulation">Run Simulation</a><br>&nbsp;<br>
+<a href="/simulation_status">Simulation Status</a><br>&nbsp;<br>
+<a href="/dispatch_group">Dispatch Group</a><br>&nbsp;<br>
+<a href="/retrieve_groups">Query Group</a><br>&nbsp;<br>
+<a href="/get_group_status">Query Group Status</a><br><br>
+<a href="/get_group_forecasts">Query Group Forecasts</a>
+<br>
+<br>
+
+<!--<form action="/confirmation" method="post">-->
+<!--  Test Name: <br>-->
+<!--  <input type="text" name="textName" style="width:600px;">-->
+<!--  <br>-->
+<!--  Message Body:<br>-->
+<!--  <textarea name="message" style="width:600px; height:600px;">-->
+<!--  </textarea><br><br>-->
+<!--  <input type="submit" value="Submit" name="submitButton">-->
+<!--</form>-->
+
+</body>
+</html>

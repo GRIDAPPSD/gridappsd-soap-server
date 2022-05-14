@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Group Forecast</title>
+    <script src="/js/jquery-3.4.1.min.js"></script>
+    <script>
+        function splitType(type){
+            var arr = type.split(/(?=[A-Z])/);
+            var re = arr.join(' ');
+            document.getElementById('pkind').innerHTML = re + ": ";
+        }
+    </script>
+</head>
+<body>
+<a href="/menu">Home</a> &nbsp;
+<a href="/get_group_forecasts">Query Group Forecasts</a>
+<br>
+<br>
+<h2>DER group forecasts:</h2>
+    {% if not gforecasts %}
+    <h1>No forecasts returned</h1>
+    {% endif %}
+    {% if gforecasts %}
+        {% for forecast in gforecasts.DERGroupForecast %}
+            <div style="padding-left:30px;">
+                Forecast mRID: {{forecast.mRID}}<br>
+                {% for fname in forecast.Names %}
+                Forecast name: {{fname.name}}<br>
+                {% endfor %}
+                Prediction creation date: {{forecast.predictionCreationDate}}<br>
+                End device group: <br>
+                <div style="padding-left:30px;">
+                    {% for gname in forecast.EndDeviceGroup.Names %}
+                    Group name: {{gname.name}}<br>
+                    {% endfor %}
+                    {% for gparameter in forecast.EndDeviceGroup.DERMonitorableParameter %}
+                    <b id="pkind">
+                    <script>
+                    document.currentScript.parentElement.innerHTML = "{{gparameter.DERParameter}}".split(/(?=[A-Z])/).join(' ') + ": ";
+                    </script>
+                    </b><br>
+                    Multiplier: {{gparameter.yMultiplier}}<br>
+                    Unit: {{gparameter.yUnit}}<br>
+                    Schedule: <br>
+                    <div style="padding-left:30px;">
+                        {% for schedule in gparameter.DispatchSchedule%}
+                        Curve kind: {{schedule.curveStyleKind}}<br>
+                        Start time: {{schedule.startTime}}<br>
+                        Time interval duration: {{schedule.timeIntervalDuration}}<br>
+                        Time interval Unit: {{schedule.timeIntervalUnit}}<br>
+                        Forecast data: <br>
+                        <div style="padding-left:30px;">
+                            {% for curve in schedule.DERCurveData%}
+                                Interval number: {{curve.intervalNumber}}<br>
+                                Max Y value: {{curve.maxYValue}}<br>
+                                Min Y value: {{curve.minYValue}}<br>
+                                Norminal Y value: {{curve.nominalYValue}}<br><br>
+                            {% endfor %}
+                        </div>
+                        {% endfor %}
+                    </div>
+                {% endfor %}
+                </div>
+            </div><br>
+        {% endfor %}
+    {% endif %}
+
+</body>
+</html>

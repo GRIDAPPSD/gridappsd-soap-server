@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+
+<a href="/menu">Home</a> &nbsp;
+<br>
+<h3>Simulation ID: {{simu_id}}</h3>
+{% for message in messages %}
+<p>
+    {% for mes in message %}
+    <p>
+        {{mes}}<br />
+    </p>
+    {% endfor %}
+
+    <!--{{message}}<br />-->
+    <!--<hr width="500px" align="left">-->
+</p>
+{% endfor %}
+
+</body>
+</html>

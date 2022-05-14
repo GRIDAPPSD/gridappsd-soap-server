@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>DER Groups - List</title>
+</head>
+<body>
+<a href="/menu">Home</a>&nbsp;&nbsp;
+<a href="/create_group">Create Group</a>&nbsp;&nbsp;
+<a href="/edit_group">Edit Group</a><br />
+{% if status %}
+<p id="status" style="color:green">{{status}}</p>
+{% endif %}
+{% if not groups %}
+<h1>No Groups Found</h1>
+{% endif %}
+{% if groups %}
+    {%if query%}
+        <h2>Query Returned Groups:</h2>
+    {%else%}
+        <h2>Existing Groups:</h2>
+    {%endif%}
+{% endif %}
+{% for g in groups %}
+<div style="width:1000px">
+        Name: {{ g.name }}<br />
+        mRID: {{ g.mrid }}<br />
+        description: {{ g.description }}<br />
+        Devices:<br />
+        {% for mm in g.devices %}
+        <div style="width:800px">
+            <div style="padding-left:30px; float:left; width:400px">mRID: {{ mm.mRID }}, </div>
+            <div style="padding-left:30px; float:left;">Name: {{mm.name}}</div>
+        </div><br>
+            <!--<div style="padding-left:10px">name: {{ mm.Names }}</div>-->
+        {% endfor %}
+        <br>
+        DERFunctions:<br>
+        <div style="padding-left:30px">
+            <div style="float:left; width:400px">connectDisconnect:</div>
+            <div>{{g.derFunctions.connectDisconnect}}</div>
+            <div style="float:left; width:400px">frequencyWattCurveFunction:</div>
+            <div>{{g.derFunctions.frequencyWattCurveFunction}}</div>
+            <div style="float:left; width:400px">maxRealPowerLimiting:</div>
+            <div>{{g.derFunctions.maxRealPowerLimiting}}</div>
+            <div style="float:left; width:400px">rampRateControl:</div>
+            <div>{{g.derFunctions.rampRateControl}}</div>
+            <div style="float:left; width:400px">reactivePowerDispatch:</div>
+            <div>{{g.derFunctions.reactivePowerDispatch}}</div>
+            <div style="float:left; width:400px">realPowerDispatch:</div>
+            <div>{{g.derFunctions.realPowerDispatch}}</div>
+            <div style="float:left; width:400px">voltageRegulation:</div>
+            <div>{{g.derFunctions.voltageRegulation}}</div>
+            <div style="float:left; width:400px">voltVarCurveFunction:</div>
+            <div>{{g.derFunctions.voltVarCurveFunction}}</div>
+            <div style="float:left; width:400px">voltWattCurveFunction:</div>
+            <div>{{g.derFunctions.voltWattCurveFunction}}</div>
+        </div>
+
+    <a href="/api/delete_group/mrid/{{g.mrid}}">Delete {{g.name}}</a>&nbsp;
+<!--    <a href="/api/edit_group/mrid/{{g.mRID}}">Edit {{g.description}}</a><br />-->
+    <hr width="500px" align="left">
+</div>
+{% endfor %}
+
+</body>
+</html>

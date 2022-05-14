@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Retrieve group options</title>
+    <script src="/js/jquery-3.4.1.min.js"></script>
+    <script>
+    $(document).ready(function() {
+        $('input[name="ngroup"]').on('change', function() {
+            changeInputDisplay();
+        });
+        if($('input[name="ngroup"]:checked').length > 0){
+            if (document.getElementById('one').checked) {
+                generateOneField();
+            }else if(document.getElementById('two').checked){
+                generateTwoField();
+            }
+        }
+    });
+
+    function changeInputDisplay(){
+        if (document.getElementById('one').checked) {
+            generateOneField();
+        }else if(document.getElementById('two').checked){
+            generateTwoField();
+        }else{
+            let queryDescription = document.getElementById('queryDescription');
+            while(queryDescription.hasChildNodes()){
+                queryDescription.removeChild(queryDescription.lastChild);
+            }
+            let chooseMethodContainer = document.getElementById('chooseMethodContainer');
+            while(chooseMethodContainer.hasChildNodes()){
+                chooseMethodContainer.removeChild(chooseMethodContainer.lastChild);
+            }
+            let container = document.getElementById('retrieveContainer');
+            while(container.hasChildNodes()){
+                container.removeChild(container.lastChild);
+            }
+            window.location.href = "/list_groups";
+        }
+    }
+
+    function generateOneField(){
+        let method = $( "#retrieveChoices option:selected" ).text();
+        //let method = document.getElementById("retrieveChoices").value;
+        if(method == "name"){
+            oneField("name");
+            addSubmitButton();
+        }else{
+            oneField("mrid");
+            addSubmitButton();
+        }
+    }
+
+    function generateTwoField(){
+        let method = $( "#retrieveChoices option:selected" ).text();
+        //let method = document.getElementById("retrieveChoices").value;
+        if(method == "name"){
+            twoFields("name");
+            addSubmitButton();
+        }else{
+            twoFields("mrid");
+            addSubmitButton();
+        }
+    }
+
+    function methodSelected(){
+            if (document.getElementById('one').checked) {
+                generateOneField();
+            }else if(document.getElementById('two').checked){
+                generateTwoField();
+            }
+    }
+
+    function oneField(method){
+        let container = document.getElementById('retrieveContainer');
+        while(container.hasChildNodes()){
+            container.removeChild(container.lastChild);
+        }
+        let textnode = document.createTextNode("Select group " + method + ": ");
+        container.appendChild(textnode);
+        let inputnode = document.createElement('select');
+        //inputnode.type = "text";
+        inputnode.id = "queryid1";
+        inputnode.name = "queryid1";
+        inputnode.required = true;
+        inputnode.multiple = false;
+        //inputnode.size = "32";
+        container.appendChild(inputnode);
+        addOptions(method, inputnode);
+        container.appendChild(document.createElement("br"));
+    }
+
+    function twoFields(method){
+        let container = document.getElementById('retrieveContainer');
+        while(container.hasChildNodes()){
+            container.removeChild(container.lastChild);
+        }
+        let textnode = document.createTextNode("Select " + method + " of 1st group: ");
+        container.appendChild(textnode);
+        let inputnode = document.createElement('select');
+        //inputnode.type = "text";
+        inputnode.id = "queryid1";
+        inputnode.name = "queryid1";
+        inputnode.required = true;
+        inputnode.multiple = false;
+        //inputnode.size = "32";
+        container.appendChild(inputnode);
+        addOptions(method, inputnode);
+        container.appendChild(document.createElement("br"));
+
+        let textnode2 = document.createTextNode("Select " + method + " of 2nd group: ");
+        container.appendChild(textnode2);
+        let inputnode2 = document.createElement('select');
+        //inputnode2.type = "text";
+        inputnode2.id = "queryid2";
+        inputnode2.name = "queryid2";
+        inputnode2.required = true;
+        inputnode2.multiple = false;
+        //inputnode2.size = "32";
+        container.appendChild(inputnode2);
+        addOptions(method, inputnode2);
+        container.appendChild(document.createElement("br"));
+    }
+
+    function addSubmitButton(){
+        let container = document.getElementById('retrieveContainer');
+
+        // generate the submit button
+        var submit_input = document.createElement("input");
+        submit_input.type = "submit";
+        submit_input.value = "Query Group(s)";
+        submit_input.form = "container";
+        container.appendChild(submit_input);
+    }
+
+    function addOptions(method, parent){
+        if(method == "name"){
+            dct = {{names|safe}};
+        }else{
+            dct = {{mRIDs|safe}};
+        }
+
+        var option, option_text;
+        for (var key in dct){
+            option = document.createElement("option");
+            option.value = key;
+            option_text = document.createTextNode(key);
+            option.appendChild(option_text);
+            parent.appendChild(option);
+        }
+    }
+    </script>
+</head>
+<body>
+    <a href="/menu">Home</a>&nbsp;&nbsp;
+    <a href="/create_group">Create Group</a><br>
+    <div id="numberOfGroups">
+        <p>Retrieve:</p>
+        <input type="radio" id="one" name="ngroup" value="oneGroup" checked form="retrieveContainer">
+        <label for="one">1 group</label><br>
+        <input type="radio" id="two" name="ngroup" value="twoGroups" form="retrieveContainer">
+        <label for="two">2 groups</label><br>
+        <input type="radio" id="all" name="ngroup" value="allGroups" form="retrieveContainer">
+        <label for="all">all groups</label><br>
+    </div>
+    <p id="queryDescription">Query group by:</p>
+    <div id="chooseMethodContainer">
+        <select id="retrieveChoices" name="retrieveChoices" required style="width:100px" onchange="methodSelected()" form="retrieveContainer">
+            <option value="name" selected>name</option>
+            <option value="mRID">mRID</option>
+        </select>
+    </div>
+    <form id="retrieveContainer" action="/query_group" method="post">
+
+    </form>
+</body>
+</html>

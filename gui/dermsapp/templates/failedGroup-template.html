@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<a href="/menu">Home</a> &nbsp;
+<!--<a href="/create">Create Another Group</a> &nbsp;
+<a href="/modify">Modify Another Group</a> &nbsp;-->
+<a href="/list_groups">List Groups</a>
+<br>
+<br>
+<h2>Failed to {{message}} DER group!</h2>
+<br>
+<p>MRID of the new group:</p>
+<p>{{group.mrid}}</p>
+<br>
+<p>Name of the new group:</p>
+<p>{{group.name}}</p>
+<br>
+<p>Device(s) of the new group:</p>
+{% for dev in group.devices %}
+<p>{{dev.mrid}}</p>
+<p>{{dev.name}}</p>
+<p>{{dev.type}}</p>
+<br>
+{% endfor %}
+
+
+</body>
+</html>

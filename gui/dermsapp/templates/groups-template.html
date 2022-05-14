@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<a href="/menu">Home</a>
+<br>
+<br>
+<h2>Delete a DER group</h2>
+<br>
+<form action="/api/edit" method="post">
+    Select device(s):
+    <br>
+    <select name="groups" required id="selectGroup">
+{% for grp in groups %}
+        <option name="{{grp.name}}">{{grp.name, grp.mrid}}</option>
+{% endfor %}
+        </select>
+    <br>
+    <br>
+    <input type="submit" value="Delete" name="action">
+    <input type="submit" value="Modify" name="action">
+</form>
+</body>
+</html>

@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Edit DERMS Group</title>
+    <script src="/js/jquery-3.4.1.min.js"></script>
+    <script>
+    var selecteddct;
+    var selectedgroup;
+    $(document).ready(function() {
+        var radios = document.getElementsByName("groupBy");
+        var val = localStorage.getItem('groupBy');
+        for (var i = 0; i < radios.length; i++) {
+            if (radios[i].value == val) {
+              radios[i].checked = true;
+            }
+        }
+        $('input[name="groupBy"]').on('change', function() {
+            localStorage.setItem('groupBy', $(this).val());
+            changeDropDownMenu();
+        });
+        if($('input[name="groupBy"]:checked').length > 0){
+            changeDropDownMenu();
+        }
+    });
+
+    function changeDropDownMenu(){
+        var container = document.getElementById("chooseGroupContainer");
+        var combobox = document.getElementById("groupChoices");
+        if(combobox){
+            container.removeChild(combobox);
+        }
+        let select_group =  document.createElement("select");
+        select_group.id = 'groupChoices';
+        select_group.name = 'groupChoices';
+        select_group.required = true;
+        select_group.multiple = false;
+        select_group.style = "width: 300px";
+        select_group.onchange = function() {groupSelected()};
+        var forma = document.getElementById('modifyGroupContainer')
+        select_group.form = forma.id;
+        container.appendChild(select_group);
+        if (document.getElementById('byName').checked) {
+            selecteddct = {{names|safe}};
+            //addSelections(, select_group);
+        }else{
+            selecteddct = {{mRIDs|safe}};
+            //addSelections({{mRIDs|safe}}, select_group);
+        }
+        addSelections(selecteddct, select_group);
+        groupSelected();
+    }
+
+    function addSelections(dct, select_group){
+        var option, option_text;
+        for (var key in dct){
+            //console.log(key)
+            option = document.createElement("option");
+            option.value = key;
+            option_text = document.createTextNode(key);
+            option.appendChild(option_text);
+            option.form = "modifyGroupContainer";
+            select_group.appendChild(option);
+        }
+    }
+
+    function groupSelected(){
+        let groupid = document.getElementById("groupChoices").value;
+        let group = selecteddct[groupid];
+        selectedgroup = group;
+        var groupDetail = document.getElementById("groupDetail");
+        while (groupDetail.hasChildNodes()) {
+            groupDetail.removeChild(groupDetail.lastChild);
+        }
+
+        let node = document.createTextNode("Group Name: " + group.name);
+        groupDetail.appendChild(node);
+        groupDetail.appendChild(document.createElement("br"));
+        let node2 = document.createTextNode("Group mRID: " + group.mrid);
+        groupDetail.appendChild(node2);
+        groupDetail.appendChild(document.createElement("br"));
+        groupDetail.appendChild(document.createElement("br"));
+        let node3 = document.createTextNode("Devices: ");
+        groupDetail.appendChild(node3);
+
+        //groupDetail.appendChild(document.createElement("br"));
+        //let editdevbutton = document.createElement("button");
+        //editdevbutton.type = "button";
+        //editdevbutton.id = "editdevbutton";
+        //editdevbutton.onclick = changeDevice();
+        //var buttonLabel = document.createTextNode("Edit");
+        //editdevbutton.appendChild(buttonLabel);
+        //groupDetail.appendChild(editdevbutton);
+
+        let i = 0;
+        let mrids = [];
+        group.devices.forEach(function(k, v){
+            i += 1;
+            mrids.push(k.mRID);
+            //let newDiv = document.createElement('div');
+            //newDiv.style="padding-left:30px; float:left; width:400px";
+            //newDiv.id = "devicemrid_" + i;
+            //let dnode = document.createTextNode('mRID: ' + k.mRID);
+            //newDiv.appendChild(dnode);
+            //devicediv.appendChild(newDiv);
+            //let newDiv2 = document.createElement('div');
+            //newDiv2.style="padding-left:30px; float:left;";
+            //newDiv2.id = "devicename_" + i;
+            //let dnode2 = document.createTextNode('name: ' + k.name);
+            //newDiv2.appendChild(dnode2);
+            //devicediv.appendChild(newDiv2);
+            ////groupDetail.appendChild(document.createElement("br"));
+            ////console.log(`Key is ${k} and value is ${v}`)
+        });
+
+        let node5 = document.createTextNode("(" + i + " devices selected)");
+        groupDetail.appendChild(node5);
+
+
+        let devicediv = document.createElement("div");
+        groupDetail.appendChild(devicediv);
+
+        let select_device =  document.createElement("select");
+        let select_id = 'selected_devices';
+        select_device.name = select_id;
+        select_device.id = select_id;
+        select_device.required = true;
+        select_device.multiple = true;
+        select_device.size = 20;
+        devicediv.appendChild(select_device);
+
+        var option, option_text;
+        {% for item in devices %}
+            option = document.createElement("option");
+            option.value = '{{item.mRID}}';
+            if ('{{item.isSmartInverter}}'=='True'){
+                var type = "smart inverter"
+            }else{
+                var type = "not smart inverter"
+            }
+            if(mrids.some(x => x === option.value)){
+                option.selected = true;
+            }
+            //option_text = document.createTextNode('{{item.mRID}}' + ', ' + '{{item.name}}' + ', ' + '{{item.__class__.__name__}}');
+            option_text = document.createTextNode('{{item.mRID}}' + ', ' + '{{item.name}}' + ', ' + type);
+            option.appendChild(option_text);
+            select_device.appendChild(option);
+        {% endfor %}
+
+
+
+
+        let brBeforefunc = document.createElement("br");
+        brBeforefunc.style = "clear:both";
+        groupDetail.appendChild(brBeforefunc);
+
+        let pfuncs = document.createElement('p');
+        pfuncs.id = "funcsLabel";
+        let node4 = document.createTextNode("DERFunctions:");
+        pfuncs.appendChild(node4);
+        groupDetail.appendChild(pfuncs);
+
+
+        let funcs = group.derFunctions;
+        let funcdiv = document.createElement('div');
+        funcdiv.style = "padding-left:30px";
+        funcdiv.id = "derfunctions";
+        pfuncs.appendChild(funcdiv);
+
+        for (var key in funcs){
+            console.log(key, funcs[key]);
+            addDERfuncCheckbox(key, funcs[key]);
+        }
+
+<!--        var edit_button = document.createElement("button");-->
+<!--        edit_button.id = "editButton";-->
+<!--        edit_button.type = "button";-->
+<!--        groupDetail.appendChild(edit_button);-->
+<!--        edit_button.onclick = function(){ };-->
+<!--        var buttonLabel = document.createTextNode("Edit This Group");-->
+<!--        edit_button.appendChild(buttonLabel);-->
+
+//<!--        edit_button.value = "Edit This Group";-->
+//<!--        edit_button.form = "modifyGroupContainer";-->
+//<!--        groupDetail.appendChild(edit_button);-->
+    }
+
+    function addDERfuncCheckbox(k, v){
+        let container = document.getElementById("derfunctions");
+        let func = document.createElement("input");
+        let thisLbl = k;
+        func.id = thisLbl;
+        func.name = thisLbl;
+        func.type = "checkbox";
+        func.value = thisLbl;
+        container.appendChild(func);
+        if(v){
+            func.checked = true;
+        }
+
+        let funcLabel = document.createElement("label");
+        funcLabel.for = func.id;
+        let cdnode = document.createTextNode(k);
+        funcLabel.appendChild(cdnode);
+        container.appendChild(funcLabel);
+        container.appendChild(document.createElement("br"));
+    }
+    function changeDevice(){
+        console.log(selectedgroup);
+<!--        $.ajax({url: url_for('modifyAGroup'),-->
+<!--        type: 'POST'-->
+<!--        data: group});-->
+    }
+    </script>
+</head>
+<body>
+<a href="/menu">Home</a>&nbsp;&nbsp;
+<a href="/create_group">Create Group</a>&nbsp;&nbsp;
+<a href="/list_groups">List All Groups</a><br />
+
+{% if not groups%}
+<h1>No Groups Found</h1>
+{% endif %}
+
+<form id="modifyGroupContainer" action="/modify" method="post">
+<div id="chooseGroupContainer">
+    <p>List groups by:</p>
+    <input type="radio" id="byName" name="groupBy" value="listGroupsByName" form="modifyGroupContainer">
+    <label for="byName">List groups by name</label><br>
+    <input type="radio" id="bymRID" name="groupBy" value="listGroupsBymRID" form="modifyGroupContainer">
+    <label for="bymRID">List groups by mRID</label><br>
+</div>
+<!--<form id="modifyGroupContainer">-->
+    <p id="groupDetail" style="width:800px"></p>
+    <p style="clear:both;">
+        <br>
+<!--        <button type="button" id="editButton" onclick="window.location.href='{{ url_for('modifyAGroup', agroup='abc')}}';">Edit This Group</button>-->
+<!--        <button type="button" id="editButton" onclick="changeDevice()">Modify This Group</button>-->
+        <input type="submit" value="Modify This Group">&nbsp;
+        <button type="button" id="deleteButton" onclick="window.location.href='{{ url_for('delete_group', group='any')}}'.replace('any', document.getElementById('groupChoices').value);">Delete This Group</button>
+    </p>
+<!--    <input type="submit" value="Edit" name="EditButton">-->
+</form>
+
+</body>
+</html>

@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Load Model</title>
+    <script src="/js/jquery-3.4.1.min.js"></script>
+
+    <script>
+    $(document).ready(function() {
+    });
+    </script>
+</head>
+<body>
+    <a href="/menu">Home</a>&nbsp;
+    <a href="/list_devices">Get Devices</a><br />
+    {% if exist_name != None or exist_mrid != None %}
+    <p id="if-statement">
+        <br>
+        <label>Selected model:</label><br>
+        <label>&nbsp;&nbsp;Model Name: {{exist_name}}</label><br>
+        <label>&nbsp;&nbsp;Model ID: {{exist_mrid}}</label><br>
+    </p>
+    {% endif %}
+    <br>
+    <form id="model_container" action="/load_model" method="post">
+        <label>Select a model from this list: &#09</label><br>&nbsp;&nbsp;
+        <select name = "mymodel" id = "models">
+            {% for m in models %}
+            <option value = {{m.name}}>{{m.name}}</option>
+            {% endfor %}
+        </select>
+        <br><br>
+        <input type="submit" value="Submit">
+    </form>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+

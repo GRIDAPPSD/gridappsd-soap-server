@@ -1,0 +1,395 @@
+<html>
+<head>
+    <title>Create DERMS Group</title>
+    <script src="/js/jquery-3.4.1.min.js"></script>
+
+    <script>
+        function hideStatus(){
+            $("#status").hide()
+        }
+        function showStatus(){
+            $("#status").show()
+        }
+
+        function uuidv4() {
+             return ([1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[018]/g, c =>
+                 (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16)
+             );
+        }
+
+
+        function assign_uuidv4(index) {
+            var thisID = "group_mrid" + index;
+            document.getElementById(thisID).value = uuidv4();
+        }
+
+        function generate_form(index){
+                    // add textbox for MRID
+            let pmrid = document.createElement("p");
+            let node = document.createTextNode("MRID of group " + index + " :");
+            pmrid.appendChild(node);
+            container.appendChild(pmrid);
+            let inputmrid = document.createElement("input");
+            inputmrid.type = "text";
+            let thisID = 'group_mrid_'+index;
+            inputmrid.id = thisID;
+            inputmrid.name=thisID;
+            inputmrid.required = false;
+            inputmrid.size="32";
+            container.appendChild(inputmrid);
+            let button = document.createElement("button");
+            button.id = "generate_mrid";
+            button.type = "button";
+            container.appendChild(button);
+            button.onclick = function(){ document.getElementById(thisID).value = uuidv4();};
+            var buttonLabel = document.createTextNode("Generate");
+            button.appendChild(buttonLabel);
+
+            // add the textbox for group name
+            let pdes = document.createElement("p");
+            let pdesnode = document.createTextNode("Enter description: ");
+            pdes.appendChild(pdesnode);
+            container.appendChild(pdes);
+            let inputdes = document.createElement("input");
+            inputdes.type = "text";
+            let thisdescription = 'group_description_'+index;
+            inputdes.id = thisdescription;
+            inputdes.name=thisdescription;
+            inputdes.required = false;
+            inputdes.size="32";
+            container.appendChild(inputdes);
+
+            // add the textbox for group name
+            let pname = document.createElement("p");
+            let pnode = document.createTextNode("Enter group name: ");
+            pname.appendChild(pnode);
+            container.appendChild(pname);
+            let inputname = document.createElement("input");
+            inputname.type = "text";
+            let thisnameID = 'group_name_'+index;
+            inputname.id = thisnameID;
+            inputname.name=thisnameID;
+            inputname.required = true;
+            inputname.size="32";
+            container.appendChild(inputname);
+
+            // add the select box
+            let pdevice = document.createElement("p");
+            let devicenode = document.createTextNode("Select device(s): ");
+            pdevice.appendChild(devicenode);
+            container.appendChild(pdevice);
+            let select_device =  document.createElement("select");
+            let select_id = 'selected_devices_'+index;
+            select_device.name = select_id;
+            select_device.id = select_id;
+            select_device.required = true;
+            select_device.multiple = true;
+            select_device.size = 20;
+            container.appendChild(select_device);
+
+            var option, option_text;
+            {% for item in devices %}
+                option = document.createElement("option");
+                option.value = '{{item.mRID}}';
+                if ('{{item.isSmartInverter}}'=='True'){
+                    var type = "smart inverter"
+                }else{
+                    var type = "not smart inverter"
+                }
+                //option_text = document.createTextNode('{{item.mRID}}' + ', ' + '{{item.name}}' + ', ' + '{{item.__class__.__name__}}');
+                option_text = document.createTextNode('{{item.mRID}}' + ', ' + '{{item.name}}' + ', ' + type);
+                option.appendChild(option_text);
+                select_device.appendChild(option);
+            {% endfor %}
+
+            container.appendChild(document.createElement("br"));
+            container.appendChild(document.createElement("br"));
+
+            // add DER functions as checkboxes
+            let derfunctions = document.createElement("p");
+            let dernode = document.createTextNode("Select DER Functions: ");
+            derfunctions.appendChild(dernode);
+            container.appendChild(derfunctions);
+
+            let derFunctions = ['connectDisconnect', 'frequencyWattCurveFunction', 'maxRealPowerLimiting',
+                                'rampRateControl', 'reactivePowerDispatch', 'realPowerDispatch',
+                                'voltageRegulation', 'voltVarCurveFunction', 'voltWattCurveFunction'];
+            let funcLen = derFunctions.length;
+            for(let idx = 0; idx < funcLen; idx++){
+                addDERfuncCheckbox(derFunctions[idx], index);
+            }
+<!--            derFunctions.forEach(function(f, index){-->
+<!--                let func = document.createElement("input");-->
+<!--                let thisLbl = f + '_' + index;-->
+<!--                func.id = thisLbl;-->
+<!--                func.name = thisLbl;-->
+<!--                func.type = "checkbox";-->
+<!--                func.value = thisLbl;-->
+<!--                container.appendChild(func);-->
+
+<!--                let funcLabel = document.createElement("label");-->
+<!--                funcLabel.for = func.id;-->
+<!--                let cdnode = document.createTextNode(f);-->
+<!--                funcLabel.appendChild(cdnode);-->
+<!--                container.appendChild(funcLabel);-->
+<!--                container.appendChild(document.createElement("br"));-->
+<!--            });-->
+
+
+            container.appendChild(document.createElement("br"));
+            container.appendChild(document.createElement("br"));
+            container.appendChild(document.createElement("br"));
+        }
+
+        function addDERfuncCheckbox(f, index){
+            let func = document.createElement("input");
+            let thisLbl = f + '_' + index;
+            func.id = thisLbl;
+            func.name = thisLbl;
+            func.type = "checkbox";
+            func.value = thisLbl;
+            container.appendChild(func);
+
+            let funcLabel = document.createElement("label");
+            funcLabel.for = func.id;
+            let cdnode = document.createTextNode(f);
+            funcLabel.appendChild(cdnode);
+            container.appendChild(funcLabel);
+            container.appendChild(document.createElement("br"));
+        }
+        $(document).ready(function(){
+<!--&lt;!&ndash;           let isHidden = false;-->
+
+<!--           $("#test").click(function(){-->
+<!--               if(isHidden){-->
+<!--                    showStatus();-->
+<!--               }else{-->
+<!--                    hideStatus();-->
+<!--               }-->
+<!--               isHidden = !isHidden;-->
+<!--           })-->
+
+<!--           hideStatus()-->
+<!--           if (status != ""){-->
+<!--               showStatus()-->
+<!--           }&ndash;&gt;-->
+
+           $("#generate_mrid").click(function(){
+               $("#group_mrid").val(uuidv4())
+           })
+
+           $("#generate_form").click(function(){
+           // get user input number of groups to generate
+            var number = document.getElementById("number_of_groups").value;
+            var container = document.getElementById("container");
+            while (container.hasChildNodes()) {
+                // clean out all forms the might exist
+                container.removeChild(container.lastChild);
+            }
+            container.appendChild(document.createElement("br"));
+
+            //depends on user input for the number of groups, generate enough forms for the number of groups
+            let i=1;
+            for (i=1;i<=number;i++){
+                generate_form(i);
+            }
+
+            // generate the submit button
+            var submit_input = document.createElement("input");
+            submit_input.type = "submit";
+            submit_input.value = "Create Group(s)";
+            submit_input.form = "container";
+            container.appendChild(submit_input);
+           })
+        });
+        function saveData(){
+            localStorage.clear();
+            let numberOfGroups = document.getElementById("number_of_groups").value;
+            localStorage.setItem("number_of_groups", numberOfGroups);
+            let i=1;
+            for (i=1;i<=numberOfGroups;i++){
+                let thisID = 'group_mrid_' + i;
+                let thisIDValue = document.getElementById(thisID).value;
+                localStorage.setItem(thisID, thisIDValue);
+                let thisName = 'group_name_' + i;
+                let thisNameValue = document.getElementById(thisName).value;
+                localStorage.setItem(thisName, thisNameValue);
+                let thisdes = 'group_description_' + i;
+                let thisdesValue = document.getElementById(thisdes).value;
+                localStorage.setItem(thisdes, thisdesValue);
+                let thisSelect = 'selected_devices_' + i;
+                let selectedOptions = [];
+                $("#" + thisSelect + " option:selected").each(function() {
+                    selectedOptions.push($(this).val());
+                });
+                localStorage["selectedOptions_" + i] = selectedOptions.join(',');
+                //let thisSelectValue = document.getElementById(thisSelect).value;
+                //localStorage.setItem(thisSelect, thisSelectValue);
+            }
+            console.log("data saved!");
+        }
+        function loadSavedData(){
+            console.log(localStorage);
+            let numberOfGroups = localStorage.getItem("number_of_groups");
+            if(numberOfGroups){
+                document.getElementById("number_of_groups").value = numberOfGroups;
+                var container = document.getElementById("container");
+                container.appendChild(document.createElement("br"));
+                let i=1;
+                for (i=1;i<=numberOfGroups;i++){
+                    generate_form(i);
+                    let thisID = 'group_mrid_' + i;
+                    document.getElementById(thisID).value = localStorage.getItem(thisID);
+                    let thisName = 'group_name_' + i;
+                    document.getElementById(thisName).value = localStorage.getItem(thisName);
+                    let thisdes = 'group_description_' + i;
+                    document.getElementById(thisdes).value = localStorage.getItem(thisdes);
+                    let thisSelect = 'selected_devices_' + i;
+                    //document.getElementById(thisSelect).value = localStorage.getItem(thisSelect);
+                    let selectedOptions = "selectedOptions_" + i;
+                    let options = localStorage.getItem(selectedOptions);
+                    $("#" + thisSelect).val(options.split(","));
+                }
+
+                // generate the submit button
+                var submit_input = document.createElement("input");
+                submit_input.type = "submit";
+                submit_input.value = "Create Group(s)";
+                submit_input.form = "container";
+                container.appendChild(submit_input);
+            }
+            console.log("data loaded!");
+        }
+    </script>
+<!--    <script>-->
+<!--        $(document).ready(function(){-->
+<!--            //alert("Whats up")-->
+<!--            $("#create_group").click(function(){-->
+<!--                alert("Woot I am here")-->
+<!--            });-->
+<!--        });-->
+<!--        -->
+<!--        function loadDoc() {-->
+<!--          var xhttp = new XMLHttpRequest();-->
+<!--          xhttp.onreadystatechange = function() {-->
+<!--            if (this.readyState == 4 && this.status == 200) {-->
+<!--              document.getElementById("demo").innerHTML = this.responseText;-->
+<!--            }-->
+<!--          };-->
+<!--          xhttp.open("POST", "demo_post.asp", true);-->
+<!--          xhttp.send();-->
+<!--        }-->
+
+<!--        $("alert").click()-->
+<!--    </script>-->
+</head>
+<body>
+<!--<h1 id="status">{{status}}-test</h1>
+<button id="test">Show status</button>-->
+<a href="/menu">Home</a>
+
+{% if status %}
+<p id="status" style="color:red">Error creating DER group: {{status.reason}}.
+    Reason: duplicate group {{status.ID.kind}}: {{status.ID._value_1}}
+</p>
+{% endif %}
+
+<h2>Create new DER group(s)</h2>
+<br>
+
+Create <input type="number" id="number_of_groups" name="number_of_groups" form="container" required placeholder="number of groups to create" min="1" size="32" autofocus> group(s).
+<button id="generate_form" type="button">GO</button>
+<form id="container" action="/create_group" method="post" onsubmit="saveData()">
+</form>
+{% if status %}
+    <script>
+        loadSavedData()
+    </script>
+{% endif %}
+<!--{% if not groups%}-->
+<!--{% else %}-->
+<!--&lt;!&ndash;<p id="testInElse">in else</p>&ndash;&gt;-->
+<!--&lt;!&ndash;<p id="testInElse2"></p>&ndash;&gt;-->
+<!--    <script>-->
+<!--&lt;!&ndash;    let count = '{{groups.__len__()}}';&ndash;&gt;-->
+<!--&lt;!&ndash;    document.getElementById("number_of_groups").value = count;&ndash;&gt;-->
+<!--&lt;!&ndash;    document.getElementById("testInElse2").innerHTML = '{{groups[0].mrid}}';&ndash;&gt;-->
+<!--&lt;!&ndash;    let ii=0;&ndash;&gt;-->
+
+<!--&lt;!&ndash;    {% for item in groups %}&ndash;&gt;-->
+<!--&lt;!&ndash;        ii = ii+1;&ndash;&gt;-->
+<!--&lt;!&ndash;        generate_form(ii);&ndash;&gt;-->
+<!--&lt;!&ndash;        document.getElementById('group_mrid_' + ii).value = '{{item.mrid}}';&ndash;&gt;-->
+<!--&lt;!&ndash;        document.getElementById('group_name_' + ii).value = '{{item.name}}';&ndash;&gt;-->
+<!--&lt;!&ndash;        {% for d in item.devices%}&ndash;&gt;-->
+<!--&lt;!&ndash;            document.getElementById('selected_devices_' + ii).value = '{{d}}';&ndash;&gt;-->
+<!--&lt;!&ndash;        {% endfor %}&ndash;&gt;-->
+<!--&lt;!&ndash;    {% endfor %}&ndash;&gt;-->
+
+<!--    //for (ii=1;ii<=count;ii++){-->
+<!--    //    generate_form(ii);-->
+<!--    //    let mridid = 'group_mrid_' + ii;-->
+<!--    //    let indexid = ii - 1;-->
+<!--    //    document.getElementById(mridid).value = '{{groups[0].mrid}}';-->
+<!--    //      document.getElementById('group_name_1').value = {{groups[0].name}};-->
+<!--    //}-->
+
+<!--    // generate the submit button-->
+<!--&lt;!&ndash;    var submit_input = document.createElement("input");&ndash;&gt;-->
+<!--&lt;!&ndash;    submit_input.type = "submit";&ndash;&gt;-->
+<!--&lt;!&ndash;    submit_input.value = "Create Group(s)";&ndash;&gt;-->
+<!--&lt;!&ndash;    submit_input.form = "container";&ndash;&gt;-->
+<!--&lt;!&ndash;    container.appendChild(submit_input);&ndash;&gt;-->
+
+<!--    //document.write(count);-->
+<!--    //var c = 0;-->
+<!--    //{% for item in groups %}-->
+<!--    //    c = c+1;-->
+<!--    //    document.getElementById("testInElse2").innerHTML = '{{groups.count}}' + 'count';-->
+<!--    //{% endfor %}-->
+<!--    </script>-->
+<!--{% endif %}-->
+<!--{% if oldform %}-->
+<!--    <p id="formFound">found form</p>-->
+<!--    <p id="formFound2"></p>-->
+<!--    <script>-->
+<!--        document.write('{{oldform}}');-->
+<!--        var info = {{oldform.get('number_of_groups')}}-->
+<!--        document.getElementById("formFound2").innerHTML = info + ' info';-->
+<!--    </script>-->
+<!--{% endif %}-->
+
+<!--<form action="/create_group" method="post">-->
+<!--    <p>MRID of the new group:</p>-->
+<!--    &lt;!&ndash;<p>{{mrid}}</p>&ndash;&gt;-->
+<!--    <input type="text" id="group_mrid" name="group_mrid" required value="{{group_mrid}}" size="32" /> <button id="generate_mrid" type="button">Generate</button>-->
+<!--&lt;!&ndash;    <input readonly name="mrid" type="text" value="{{mrid}}" size="30">&ndash;&gt;-->
+<!--    <br>&nbsp;<br>-->
+<!--    Enter group name:-->
+<!--    <br>-->
+<!--    <input name="group_name" type="text" size="30" required value="{{group_name}}"><br>&nbsp;<br>-->
+<!--&lt;!&ndash;    Characteristics: <br />&ndash;&gt;-->
+<!--&lt;!&ndash;    <input type="checkbox" name="connectDisconnect" value="{{ connectDisconnect }}" {% if connectDisconnect %} checked {% endif %} /> ConnectDisconnect <br />&ndash;&gt;-->
+<!--&lt;!&ndash;    frequencyWattCurveFunction <input type="checkbox" name="frequencyWattCurveFunction" value="{{ frequencyWattCurveFunction }}" /><br />&ndash;&gt;-->
+<!--&lt;!&ndash;    maxRealPowerLimiting <input type="checkbox" name="maxRealPowerLimiting" value="{{ maxRealPowerLimiting }}" /><br />&ndash;&gt;-->
+<!--&lt;!&ndash;    rampRateControl <input type="checkbox" name="rampRateControl" value="{{ rampRateControl }}" /><br />&ndash;&gt;-->
+<!--&lt;!&ndash;    reactivePowerDispatch <input type="checkbox" name="reactivePowerDispatch" value="{{ reactivePowerDispatch }}" /><br />&ndash;&gt;-->
+<!--&lt;!&ndash;    voltageRegulation <input type="checkbox" name="voltageRegulation" value="{{ voltageRegulation }}" /><br />&ndash;&gt;-->
+<!--&lt;!&ndash;    realPowerDispatch <input type="checkbox" name="realPowerDispatch" value="{{ realPowerDispatch }}" /><br />&ndash;&gt;-->
+<!--&lt;!&ndash;    voltVarCurveFunction <input type="checkbox" name="connectDisconnect" value="{{ voltVarCurveFunction }}" /><br />&ndash;&gt;-->
+<!--&lt;!&ndash;    voltWattCurveFunction <input type="checkbox" name="voltWattCurveFunction" value="{{ voltWattCurveFunction }}" /><br />&ndash;&gt;-->
+
+<!--    Select device(s):-->
+<!--    <br>-->
+<!--    <select name="selected_devices" size="20" multiple required id="selected_devices">-->
+<!--{% for dev in devices %}-->
+<!--        <option value="{{dev.mrid}}">{{dev.name, dev.type, dev.mrid}}</option>-->
+<!--{% endfor %}-->
+<!--        </select>-->
+<!--    <br>&nbsp;<br>-->
+<!--    <input type="submit" value="Create Group">-->
+<!--</form>-->
+
+
+</body>
+</html>

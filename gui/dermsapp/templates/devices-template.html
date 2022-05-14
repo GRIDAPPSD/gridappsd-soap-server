@@ -1,0 +1,33 @@
+<html>
+<body>
+
+<a href="/menu">Home</a>
+<br>
+<br>
+<h2>Create a new DER group</h2>
+<br>
+<form action="/api/create" method="post">
+    <p>MRID of the new group:</p>
+    <!--<p>{{mrid}}</p>-->
+    <input readonly name="mrid" type="text" value="{{mrid}}" size="30">
+    <br>
+    <br>
+    Enter group name:
+    <br>
+    <input name="groupName" type="text" size="30" required value="{{groupname}}"><br>
+    <br>
+    Select device(s):
+    <br>
+    <select name="devices" size="20" multiple required id="selectDevices">
+{% for dev in devices %}
+        <option name="{{dev.mrid}}">{{dev.name, dev.type, dev.mrid}}</option>
+{% endfor %}
+        </select>
+    <br>
+    <br>
+    <input type="submit" value="Submit" name="submitButton">
+</form>
+
+
+</body>
+</html>

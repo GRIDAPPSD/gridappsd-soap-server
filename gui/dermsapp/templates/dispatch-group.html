@@ -1,0 +1,521 @@
+<html>
+<head>
+    <title>Dispatch DERMS Group</title>
+    <script src="/js/jquery-3.4.1.min.js"></script>
+
+    <script>
+        function hideStatus(){
+            $("#status").hide()
+        }
+        function showStatus(){
+            $("#status").show()
+        }
+        function uuidv4() {
+             return ([1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[018]/g, c =>
+                 (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16)
+             );
+        }
+        function generate_form(index){
+
+            // add textbox for dispatch_mrid
+            let pmrid = document.createElement("p");
+            let node = document.createTextNode("Dispatch mrid " + index + " :");
+            pmrid.appendChild(node);
+            container.appendChild(pmrid);
+            let inputmrid = document.createElement("input");
+            inputmrid.type = "text";
+            let thisID = 'dispatch_mrid_'+index;
+            inputmrid.id = thisID;
+            inputmrid.name=thisID;
+            inputmrid.required = false;
+            inputmrid.size="32";
+            container.appendChild(inputmrid);
+            let button = document.createElement("button");
+            button.id = "generate_mrid";
+            button.type = "button";
+            container.appendChild(button);
+            button.onclick = function(){ document.getElementById(thisID).value = uuidv4();};
+            var buttonLabel = document.createTextNode("Generate");
+            button.appendChild(buttonLabel);
+
+            // add the textbox for dispatch_name
+            let pname = document.createElement("p");
+            let pnamenode = document.createTextNode("Dispatch name : ");
+            pname.appendChild(pnamenode);
+            container.appendChild(pname);
+            let inputdes = document.createElement("input");
+            inputdes.type = "text";
+            let thisdescription = 'dispatch_name_'+index;
+            inputdes.id = thisdescription;
+            inputdes.name=thisdescription;
+            inputdes.required = false;
+            inputdes.size="32";
+            container.appendChild(inputdes);
+
+            // select DER group to dispatch dispatch_group_mrid, dispatch_group_name
+            let pgroup = document.createElement("p");
+            let groupnode = document.createTextNode("Select DER group: ");
+            pgroup.appendChild(groupnode);
+            container.appendChild(pgroup);
+            let select_group =  document.createElement("select");
+            let select_id = 'selected_groups_'+index;
+            select_group.name = select_id;
+            select_group.id = select_id;
+            select_group.required = false;
+            select_group.size = 1;
+            container.appendChild(select_group);
+            var option, option_text;
+            {% for item in groups %}
+                option = document.createElement("option");
+                option.value = '{{item.mrid}},{{item.name}}';
+                option_text = document.createTextNode('{{item.mrid}}' + ', ' + '{{item.name}}');
+                option.appendChild(option_text);
+                select_group.appendChild(option);
+            {% endfor %}
+            container.appendChild(document.createElement("br"));
+
+            // select dispatch_group_para_DERParameter
+            let pDERParameter = document.createElement("p");
+            let DERParameternode = document.createTextNode("Select dispatch DERParameter: ");
+            pDERParameter.appendChild(DERParameternode);
+            container.appendChild(pDERParameter);
+            let select_DERParameter =  document.createElement("select");
+            let select_id_1 = 'dispatch_group_para_DERParameter_'+index;
+            select_DERParameter.name = select_id_1;
+            select_DERParameter.id = select_id_1;
+            select_DERParameter.required = true;
+            select_DERParameter.size = 1;
+            container.appendChild(select_DERParameter);
+            const DERParameter_list = ["activePower", "reactivePower"];
+            //["activePower", "apparentPower", "decreasingRampRate", "highFilterBiDirectionalRegulation",
+            //"highFilterDownRegulation", "highFilterUpRegulation", "increasingRampRate",
+            //"lowFilterBiDirectionalRegulation", "lowFilterDownRegulation", "lowFilterUpRegulation",
+            //"reactivePower", "voltage", "stateOfCharge"];
+            var option, option_text, item;
+            let funcLen_1 = DERParameter_list.length;
+            for(let idx = 0; idx < funcLen_1; idx++){
+                item = DERParameter_list[idx]
+                option = document.createElement("option");
+                option.value = item;
+                option_text = document.createTextNode(item);
+                option.appendChild(option_text);
+                select_DERParameter.appendChild(option);
+            }
+            container.appendChild(document.createElement("br"));
+
+            // select dispatch_group_para_flowDirection
+            let pflowDirection = document.createElement("p");
+            let flowDirectionnode = document.createTextNode("Select dispatch flowDirection: ");
+            pflowDirection.appendChild(flowDirectionnode);
+            container.appendChild(pflowDirection);
+            let select_flowDirection =  document.createElement("select");
+            let select_id_2 = 'dispatch_group_para_flowDirection_'+index;
+            select_flowDirection.name = select_id_2;
+            select_flowDirection.id = select_id_2;
+            select_flowDirection.required = false;
+            select_flowDirection.size = 1;
+            container.appendChild(select_flowDirection);
+            const flowDirection_list = ["", "forward", "reverse"];
+            //["", "forward", "lagging", "leading", "net", "none", "q1minusQ4", "q1plusQ2",
+            //"q1plusQ3", "q1plusQ4", "q2minusQ3", "q2plusQ3", "q2plusQ4", "q3minusQ2", "q3plusQ4", "quadrant1",
+            //"quadrant2", "quadrant3", "quadrant4", "reverse", "total", "totalByPhase"];
+            var option, option_text, item;
+            let funcLen_2 = flowDirection_list.length;
+            for(let idx = 0; idx < funcLen_2; idx++){
+                item = flowDirection_list[idx]
+                option = document.createElement("option");
+                option.value = item;
+                option_text = document.createTextNode(item);
+                option.appendChild(option_text);
+                select_flowDirection.appendChild(option);
+            }
+            container.appendChild(document.createElement("br"));
+
+            // select dispatch_group_para_yMultiplier
+            let pyMultiplier = document.createElement("p");
+            let yMultipliernode = document.createTextNode("Select dispatch yMultiplier: ");
+            pyMultiplier.appendChild(yMultipliernode);
+            container.appendChild(pyMultiplier);
+            let select_yMultiplier =  document.createElement("select");
+            let select_id_3 = 'dispatch_group_para_yMultiplier_'+index;
+            select_yMultiplier.name = select_id_3;
+            select_yMultiplier.id = select_id_3;
+            select_yMultiplier.required = true;
+            select_yMultiplier.size = 1;
+            container.appendChild(select_yMultiplier);
+            const yMultiplier_list = ["k", ""];
+            //["k", "E", "G", "M", "P", "T", "Y", "Z", "a", "c", "d", "da", "f", "h", "m", "micro", "n", "none", "p", "y", "z"];
+            var option, option_text, item;
+            let funcLen_3 = yMultiplier_list.length;
+            for(let idx = 0; idx < funcLen_3; idx++){
+                item = yMultiplier_list[idx]
+                option = document.createElement("option");
+                option.value = item;
+                option_text = document.createTextNode(item);
+                option.appendChild(option_text);
+                select_yMultiplier.appendChild(option);
+            }
+            container.appendChild(document.createElement("br"));
+
+            // select dispatch_group_para_yUnit
+            let pyUnit = document.createElement("p");
+            let yUnitnode = document.createTextNode("Select dispatch yUnit: ");
+            pyUnit.appendChild(yUnitnode);
+            container.appendChild(pyUnit);
+            let select_yUnit =  document.createElement("select");
+            let select_id_4 = 'dispatch_group_para_yUnit_'+index;
+            select_yUnit.name = select_id_4;
+            select_yUnit.id = select_id_4;
+            select_yUnit.required = true;
+            select_yUnit.size = 1;
+            container.appendChild(select_yUnit);
+            const yUnit_list = ["W", "VAr"];
+            //["W", "Ah", "As", "Btu", "Hz", "Q", "Qh", "V", "VA", "VAh", "VAr", "VArh", "VPerVA", "VPerVAr", "Vh", "Vs", "A", "WPerA", "WPers", "Wh", "deg", "degC", "h", "min", "ohm", "ohmPerm", "ohmm", "onePerHz", "s", "therm"];
+            var option, option_text, item;
+            let funcLen_4 = yUnit_list.length;
+            for(let idx = 0; idx < funcLen_4; idx++){
+                item = yUnit_list[idx]
+                option = document.createElement("option");
+                option.value = item;
+                option_text = document.createTextNode(item);
+                option.appendChild(option_text);
+                select_yUnit.appendChild(option);
+            }
+            container.appendChild(document.createElement("br"));
+
+            // select dispatch_group_para_sch_curveStyleKind
+            let pcurveStyleKind = document.createElement("p");
+            let curveStyleKindnode = document.createTextNode("Select dispatch curveStyleKind: ");
+            pcurveStyleKind.appendChild(curveStyleKindnode);
+            container.appendChild(pcurveStyleKind);
+            let select_curveStyleKind =  document.createElement("select");
+            let select_id_5 = 'dispatch_group_para_sch_curveStyleKind_'+index;
+            select_curveStyleKind.name = select_id_5;
+            select_curveStyleKind.id = select_id_5;
+            select_curveStyleKind.required = true;
+            select_curveStyleKind.size = 1;
+            container.appendChild(select_curveStyleKind);
+            const curveStyleKind_list = ["constantYValue", "straightLineYValues"];
+            var option, option_text, item;
+            let funcLen_5 = curveStyleKind_list.length;
+            for(let idx = 0; idx < funcLen_5; idx++){
+                item = curveStyleKind_list[idx]
+                option = document.createElement("option");
+                option.value = item;
+                option_text = document.createTextNode(item);
+                option.appendChild(option_text);
+                select_curveStyleKind.appendChild(option);
+            }
+            container.appendChild(document.createElement("br"));
+
+            // add textbox for dispatch_group_para_sch_startTime
+            var p_temp = document.createElement("p");
+            var p_tempnode = document.createTextNode("Dispatch Start Time (UTC): ");
+            p_temp.appendChild(p_tempnode);
+            container.appendChild(p_temp);
+
+            var temp_str = 'Year_'+index;
+            var label_temp = document.createElement("label");
+            label_temp.htmlFor = temp_str;
+            label_temp.innerHTML = 'Year  ';
+            container.appendChild(label_temp);
+            var input_temp = document.createElement("input");
+            input_temp.type = "number";
+            input_temp.id = temp_str
+            input_temp.name = temp_str
+            input_temp.required = true;
+            input_temp.size = "6";
+            input_temp.value = "2022"
+            container.appendChild(input_temp);
+
+            var temp_str = 'Month_'+index;
+            var label_temp = document.createElement("label");
+            label_temp.htmlFor = temp_str;
+            label_temp.innerHTML = '  Mon  ';
+            container.appendChild(label_temp);
+            var input_temp = document.createElement("input");
+            input_temp.type = "number";
+            input_temp.id = temp_str
+            input_temp.name = temp_str
+            input_temp.required = true;
+            input_temp.size = "3";
+            input_temp.value = "1"
+            container.appendChild(input_temp);
+
+            var temp_str = 'Day_'+index;
+            var label_temp = document.createElement("label");
+            label_temp.htmlFor = temp_str;
+            label_temp.innerHTML = '  Day  ';
+            container.appendChild(label_temp);
+            var input_temp = document.createElement("input");
+            input_temp.type = "number";
+            input_temp.id = temp_str
+            input_temp.name = temp_str
+            input_temp.required = true;
+            input_temp.size = "3";
+            input_temp.value = "1"
+            container.appendChild(input_temp);
+
+            var temp_str = 'Hour_'+index;
+            var label_temp = document.createElement("label");
+            label_temp.htmlFor = temp_str;
+            label_temp.innerHTML = '  Time  ';
+            container.appendChild(label_temp);
+            var input_temp = document.createElement("input");
+            input_temp.type = "number";
+            input_temp.id = temp_str
+            input_temp.name = temp_str
+            input_temp.required = true;
+            input_temp.size = "3";
+            input_temp.value = "0"
+            container.appendChild(input_temp);
+
+            var temp_str = 'Min_'+index;
+            var label_temp = document.createElement("label");
+            label_temp.htmlFor = temp_str;
+            label_temp.innerHTML = ' : ';
+            container.appendChild(label_temp);
+            var input_temp = document.createElement("input");
+            input_temp.type = "number";
+            input_temp.id = temp_str
+            input_temp.name = temp_str
+            input_temp.required = true;
+            input_temp.size = "3";
+            input_temp.value = "0"
+            container.appendChild(input_temp);
+
+            var temp_str = 'Sec_'+index;
+            var label_temp = document.createElement("label");
+            label_temp.htmlFor = temp_str;
+            label_temp.innerHTML = ' : ';
+            container.appendChild(label_temp);
+            var input_temp = document.createElement("input");
+            input_temp.type = "number";
+            input_temp.id = temp_str
+            input_temp.name = temp_str
+            input_temp.required = true;
+            input_temp.size = "3";
+            input_temp.value = "0"
+            container.appendChild(input_temp);
+            container.appendChild(document.createElement("br"));
+            container.appendChild(document.createElement("br"));
+
+            // add textbox for dispatch_group_para_sch_startTime (in epoch time format)
+            var temp_str = 'Epoch_'+index;
+            var label_temp = document.createElement("label");
+            label_temp.htmlFor = temp_str;
+            label_temp.innerHTML = 'Alternative input as Epoch Time  ';
+            container.appendChild(label_temp);
+            var input_temp = document.createElement("input");
+            input_temp.type = "number";
+            input_temp.id = temp_str
+            input_temp.name = temp_str
+            input_temp.required = false;
+            input_temp.size = "32";
+            //input_temp.value = "1648594802"
+            container.appendChild(input_temp);
+            container.appendChild(document.createElement("br"));
+
+            // add numberbox for dispatch_group_para_sch_timeIntervalDuration
+            let pnum_Duration = document.createElement("p");
+            let pnum_Durationnode = document.createTextNode("Dispatch time Interval Duration: ");
+            pnum_Duration.appendChild(pnum_Durationnode);
+            container.appendChild(pnum_Duration);
+            let inputDuration = document.createElement("input");
+            inputDuration.type = "number";
+            let thistimeIntervalDuration = 'dispatch_group_para_sch_timeIntervalDuration_'+index;
+            inputDuration.id = thistimeIntervalDuration;
+            inputDuration.name = thistimeIntervalDuration;
+            inputDuration.required = true;
+            inputDuration.min = "1"
+            inputDuration.size = "32";
+            container.appendChild(inputDuration);
+            container.appendChild(document.createElement("br"));
+
+            // select dispatch_group_para_sch_timeIntervalUnit
+            let ptimeIntervalUnit = document.createElement("p");
+            let timeIntervalUnitnode = document.createTextNode("Dispatch time Interval Unit: ");
+            ptimeIntervalUnit.appendChild(timeIntervalUnitnode);
+            container.appendChild(ptimeIntervalUnit);
+            let select_timeIntervalUnit =  document.createElement("select");
+            let select_id_6 = 'dispatch_group_para_sch_timeIntervalUnit_'+index;
+            select_timeIntervalUnit.name = select_id_6;
+            select_timeIntervalUnit.id = select_id_6;
+            select_timeIntervalUnit.required = true;
+            select_timeIntervalUnit.size = 1;
+            container.appendChild(select_timeIntervalUnit);
+            const timeIntervalUnit_list = ["h", "m", "s"];
+            //["D", "M", "Y", "h", "m", "s"]
+            var option, option_text, item;
+            let funcLen_6 = timeIntervalUnit_list.length;
+            for(let idx = 0; idx < funcLen_6; idx++){
+                item = timeIntervalUnit_list[idx]
+                option = document.createElement("option");
+                option.value = item;
+                option_text = document.createTextNode(item);
+                option.appendChild(option_text);
+                select_timeIntervalUnit.appendChild(option);
+            }
+            container.appendChild(document.createElement("br"));
+
+            // add textboxs for dispatch_group_para_sch_DERCurveData
+            let p_curve = document.createElement("p");
+            let p_curvenode = document.createTextNode("Dispatch Curve Data: ");
+            p_curve.appendChild(p_curvenode);
+            container.appendChild(p_curve);
+
+            for(let i_inter = 1; i_inter < 6; i_inter++){
+                var temp_str = 'dispatch_group_para_sch_intervalNumber_'+index+'_'+i_inter;
+                var label_temp = document.createElement("label");
+                label_temp.htmlFor = temp_str;
+                label_temp.innerHTML = i_inter+":  Interval Number  ";
+                container.appendChild(label_temp);
+                var input_temp = document.createElement("input");
+                input_temp.type = "number";
+                input_temp.id = temp_str;
+                input_temp.name = temp_str;
+                input_temp.required = false;
+                input_temp.min = "1"
+                //input_temp.value = i_inter
+                input_temp.size = "16";
+                container.appendChild(input_temp);
+
+                var temp_str = 'dispatch_group_para_sch_nominalYValue_'+index+'_'+i_inter;
+                var label_temp = document.createElement("label");
+                label_temp.htmlFor = temp_str;
+                label_temp.innerHTML = "  Norminal Y Value  ";
+                container.appendChild(label_temp);
+                var input_temp2 = document.createElement("input");
+                input_temp2.type = "number";
+                input_temp2.id = temp_str;
+                input_temp2.name = temp_str;
+                input_temp2.required = false;
+                input_temp2.size = "16";
+                input_temp2.step = "any";
+                container.appendChild(input_temp2);
+
+                container.appendChild(document.createElement("br"));
+            }
+
+            container.appendChild(document.createElement("br"));
+            container.appendChild(document.createElement("br"));
+            container.appendChild(document.createElement("br"));
+        }
+        $(document).ready(function(){
+
+           $("#generate_mrid").click(function(){
+
+           alert("Button clicked: generate dispatch mrid!")
+           $("#dispatch_mrid").val(uuidv4())
+
+           })
+
+           $("#generate_form").click(function(){
+
+           // alert("Button clicked: generate form!")
+
+           // get user input number of dispatches to generate
+            var number = document.getElementById("number_of_dispatches").value;
+            var container = document.getElementById("container");
+            while (container.hasChildNodes()) {
+                // clean out all forms the might exist
+                container.removeChild(container.lastChild);
+            }
+            container.appendChild(document.createElement("br"));
+
+            //depends on user input for the number of dispatches, generate enough forms for the number of dispatches
+            let i=1;
+            for (i=1;i<=number;i++){
+                generate_form(i);
+            }
+
+            // generate the submit button
+            var submit_input = document.createElement("input");
+            submit_input.type = "submit";
+            submit_input.value = "Dispatch Group(s)";
+            submit_input.form = "container";
+            container.appendChild(submit_input);
+           })
+        });
+        function saveData(){
+            localStorage.clear();
+            let number_of_dispatches = document.getElementById("number_of_dispatches").value;
+            localStorage.setItem("number_of_dispatches", number_of_dispatches);
+            let i=1;
+            for (i=1;i<=number_of_dispatches;i++){
+                let thisID = 'dispatch_mrid_' + i;
+                let thisIDValue = document.getElementById(thisID).value;
+                localStorage.setItem(thisID, thisIDValue);
+                let thisName = 'dispatch_name_' + i;
+                let thisNameValue = document.getElementById(thisName).value;
+                localStorage.setItem(thisName, thisNameValue);
+                let thisGroupID = 'dispatch_group_mrid_' + i;
+                let thisGroupIDValue = document.getElementById(thisGroupID).value;
+                localStorage.setItem(thisGroupID, thisGroupIDValue);
+                let thisGroupName = 'dispatch_group_name_' + i;
+                let thisGroupNameValue = document.getElementById(thisGroupName).value;
+                localStorage.setItem(thisGroupName, thisGroupNameValue);
+
+                // more inputs to be added
+            }
+            console.log("data saved!");
+        }
+        function loadSavedData(){
+            console.log(localStorage);
+            let number_of_dispatches = localStorage.getItem("number_of_dispatches");
+            if(number_of_dispatches){
+                document.getElementById("number_of_dispatches").value = number_of_dispatches;
+                var container = document.getElementById("container");
+                container.appendChild(document.createElement("br"));
+                let i=1;
+                for (i=1;i<=number_of_dispatches;i++){
+                    generate_form(i);
+                    let thisID = 'dispatch_mrid_' + i;
+                    document.getElementById(thisID).value = localStorage.getItem(thisID);
+                    let thisName = 'dispatch_name_' + i;
+                    document.getElementById(thisName).value = localStorage.getItem(thisName);
+                    let thisGroupID = 'dispatch_group_mrid_' + i;
+                    document.getElementById(thisGroupID).value = localStorage.getItem(thisGroupID);
+                    let thisGroupName = 'dispatch_group_name_' + i;
+                    document.getElementById(thisGroupName).value = localStorage.getItem(thisGroupName);
+
+                    // more inputs to be added
+                }
+
+                // generate the submit button
+                var submit_input = document.createElement("input");
+                submit_input.type = "submit";
+                submit_input.value = "Create Group(s)";
+                submit_input.form = "container";
+                container.appendChild(submit_input);
+            }
+            console.log("data loaded!");
+        }
+    </script>
+</head>
+<body>
+
+<a href="/menu">Home</a>
+
+{% if status %}
+<br>
+<br>
+<p id="comment" style="color:red">{{comment}}</p>
+<p id="status" style="color:red">{{status}}</p>
+<br>
+{% endif %}
+
+<h2>Dispatch DER group(s)</h2>
+<br>
+
+Create <input type="number" id="number_of_dispatches" name="number_of_dispatches" form="container" required placeholder="number of groups to dispatch" min="1" size="32" autofocus> dispatch(es).
+<button id="generate_form" type="button">GO</button>
+<form id="container" action="/dispatch_group" method="post" onsubmit="saveData()"></form>
+<!--{% if status %}-->
+<!--    <script>-->
+<!--        loadSavedData()-->
+<!--    </script>-->
+<!--{% endif %}-->
+
+</body>
+</html>

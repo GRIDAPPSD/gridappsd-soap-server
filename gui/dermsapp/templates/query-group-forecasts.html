@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Query Group Forecasts</title>
+    <script src="/js/jquery-3.4.1.min.js"></script>
+    <script>
+        function addASchedule(){
+            var container = document.getElementById("container");
+            let pseparator = document.createElement("p");
+            let separator = document.createTextNode("===============================");
+            pseparator.appendChild(separator);
+            container.appendChild(pseparator);
+        }
+
+        function generateForm(){
+            let ngroups = document.getElementById("number_of_groups").value;
+            var container = document.getElementById("container");
+            while (container.hasChildNodes()) {
+                // clean out all forms the might exist
+                container.removeChild(container.lastChild);
+            }
+            container.appendChild(document.createElement("br"));
+
+            //depends on user input for the number of groups, generate enough forms for the number of groups
+            let i=1;
+            for (i=1;i<=ngroups;i++){
+                let select_group =  document.createElement("select");
+                let select_id = 'select_group_'+i;
+                select_group.name = select_id;
+                select_group.id = select_id;
+                select_group.required = true;
+                select_group.multiple = false;
+                select_group.size = 20;
+                container.appendChild(select_group);
+
+                var option, option_text;
+                {% for group in groups %}
+                    option = document.createElement("option");
+                    option.value = '{{group.name}}';
+                    option_text = document.createTextNode('{{group.name}}' + ', ' + '{{group.mrid}}');
+                    option.appendChild(option_text);
+                    select_group.appendChild(option);
+                {% endfor %}
+
+                container.appendChild(document.createElement("br"));
+
+                let pparameters = document.createElement("p");
+                let inputmrid = document.createElement("input");
+                inputmrid.type = "text";
+                let thisID = 'group_mrid_'+index;
+                inputmrid.id = thisID;
+                inputmrid.name=thisID;
+                inputmrid.required = false;
+                inputmrid.size="32";
+                container.appendChild(inputmrid);
+                let button = document.createElement("button");
+                button.id = "generate_mrid";
+                button.type = "button";
+                container.appendChild(button);
+                button.onclick = function(){ document.getElementById(thisID).value = uuidv4();};
+                var buttonLabel = document.createTextNode("Generate");
+                button.appendChild(buttonLabel);
+
+                // add the textbox for group name
+                let pdes = document.createElement("p");
+                let pdesnode = document.createTextNode("Enter description: ");
+                pdes.appendChild(pdesnode);
+                container.appendChild(pdes);
+                let inputdes = document.createElement("input");
+                inputdes.type = "text";
+                let thisdescription = 'group_description_'+index;
+                inputdes.id = thisdescription;
+                inputdes.name=thisdescription;
+                inputdes.required = false;
+                inputdes.size="32";
+                container.appendChild(inputdes);
+
+                // add the textbox for group name
+                let pname = document.createElement("p");
+                let pnode = document.createTextNode("Enter group name: ");
+                pname.appendChild(pnode);
+                container.appendChild(pname);
+                let inputname = document.createElement("input");
+                inputname.type = "text";
+                let thisnameID = 'group_name_'+index;
+                inputname.id = thisnameID;
+                inputname.name=thisnameID;
+                inputname.required = true;
+                inputname.size="32";
+                container.appendChild(inputname);
+
+                // add the select box
+                let pdevice = document.createElement("p");
+                let devicenode = document.createTextNode("Select device(s): ");
+                pdevice.appendChild(devicenode);
+                container.appendChild(pdevice);
+                let select_device =  document.createElement("select");
+                let select_id = 'selected_devices_'+index;
+                select_device.name = select_id;
+                select_device.id = select_id;
+                select_device.required = true;
+                select_device.multiple = true;
+                select_device.size = 20;
+                container.appendChild(select_device);
+
+                var option, option_text;
+                {% for item in devices %}
+                    option = document.createElement("option");
+                    option.value = '{{item.mRID}}';
+                    if ('{{item.isSmartInverter}}'=='True'){
+                        var type = "smart inverter"
+                    }else{
+                        var type = "not smart inverter"
+                    }
+                    //option_text = document.createTextNode('{{item.mRID}}' + ', ' + '{{item.name}}' + ', ' + '{{item.__class__.__name__}}');
+                    option_text = document.createTextNode('{{item.mRID}}' + ', ' + '{{item.name}}' + ', ' + type);
+                    option.appendChild(option_text);
+                    select_device.appendChild(option);
+                {% endfor %}
+
+                container.appendChild(document.createElement("br"));
+                container.appendChild(document.createElement("br"));
+
+                // add DER functions as checkboxes
+                let derfunctions = document.createElement("p");
+                let dernode = document.createTextNode("Select DER Functions: ");
+                derfunctions.appendChild(dernode);
+                container.appendChild(derfunctions);
+
+                let derFunctions = ['connectDisconnect', 'frequencyWattCurveFunction', 'maxRealPowerLimiting',
+                                    'rampRateControl', 'reactivePowerDispatch', 'realPowerDispatch',
+                                    'voltageRegulation', 'voltVarCurveFunction', 'voltWattCurveFunction'];
+                let funcLen = derFunctions.length;
+                for(let idx = 0; idx < funcLen; idx++){
+                    addDERfuncCheckbox(derFunctions[idx], index);
+                }
+                container.appendChild(document.createElement("br"));
+                container.appendChild(document.createElement("br"));
+                container.appendChild(document.createElement("br"));
+            }
+
+            // generate the submit button
+            var submit_input = document.createElement("input");
+            submit_input.type = "submit";
+            submit_input.value = "Create Group(s)";
+            submit_input.form = "container";
+            container.appendChild(submit_input);
+        }
+    </script>
+</head>
+<body>
+
+<a href="/menu">Home</a>
+
+{% if status %}
+<br>
+<br>
+<p id="status" style="color:red">Query Forecasts Status: {{status}}.</p>
+<br>
+{% endif %}
+
+<h2>Query DER group(s) Forecasts</h2>
+<br>
+{% if not groups%}
+<h1>No Groups Found</h1>
+{% endif %}
+{% if groups%}
+<p>Choose one or two group(s) to query forecast:</p>
+<!--Create <input type="number" max="2" min="1" id="number_of_groups" name="number_of_groups" form="container" required placeholder="number of groups to create" min="1" size="32" autofocus> group(s).-->
+<!--<button id="generate_form" type="button" onclick="generateForm()">GO</button>-->
+<script>
+    function saveData(){
+        localStorage.clear();
+        let selectedGroups = [];
+        $("#group option:selected").each(function() {
+            selectedGroups.push($(this).val());
+        });
+        localStorage["selectedGroups"] = selectedGroups.join(',');
+        let selectParameters = [];
+        $("#selectParameter option:selected").each(function() {
+            selectParameters.push($(this).val());
+        });
+        localStorage["selectParameters"] = selectParameters.join(',');
+        let nSchedule = parseInt(document.getElementById("nSchedule").value);
+        localStorage.setItem("nSchedule", nSchedule);
+        let i=1;
+        for (i=1;i<=nSchedule;i++){
+            let thisID = 'group_mrid_' + i;
+            let thisIDValue = document.getElementById(thisID).value;
+            localStorage.setItem(thisID, thisIDValue);
+            let thisName = 'group_name_' + i;
+            let thisNameValue = document.getElementById(thisName).value;
+            localStorage.setItem(thisName, thisNameValue);
+            let thisdes = 'group_description_' + i;
+            let thisdesValue = document.getElementById(thisdes).value;
+            localStorage.setItem(thisdes, thisdesValue);
+            let thisSelect = 'selected_devices_' + i;
+            let selectedOptions = [];
+            $("#" + thisSelect + " option:selected").each(function() {
+                selectedOptions.push($(this).val());
+            });
+            localStorage["selectedOptions_" + i] = selectedOptions.join(',');
+            //let thisSelectValue = document.getElementById(thisSelect).value;
+            //localStorage.setItem(thisSelect, thisSelectValue);
+        }
+        console.log("data saved!");
+    }
+</script>
+<form id="container" action="/get_group_forecasts" method="post" onsubmit="saveData()">
+    <select id="group" name="group" style="width:350px;" multiple="true">
+<!--    <option id="group1empty" name="group1empty" value=""></option>-->
+    {% for group in groups %}
+        <option id="group1option" name="{{group.name}}" value="{{group.name}}">{{group.name}}, {{group.mrid}}</option>
+    {% endfor %}
+    </select><br><br>
+<!--    <select id="group2" name="group2" style="width:100px">-->
+<!--    <option id="group2empty" name="group2empty" value=""></option>-->
+<!--    {% for group in groups %}-->
+<!--        <option id="group2option" name="{{group.name}}" value="{{group.name}}">{{group.name}}, {{group.mrid}}</option>-->
+<!--    {% endfor %}-->
+<!--    </select><br><br>-->
+    <p>
+    <label style="display:inline-block;width:400px;">Choose parameter(s) for Forecast Query:</label><br>
+    <select id="selectParameter" name="selectParameter" style="width:350px;" multiple="true" size="12">
+        <option value="activePower" id="activePowerOption" name="activePowerOption">active Power</option>
+        <option value="apparentPower" id="apparentPowerOption" name="apparentPowerOption">apparent Power</option>
+        <option value="decreasingRampRate" id="decreasingRampRateOption" name="decreasingRampRateOption">decreasing Ramp Rate</option>
+        <option value="highFilterBiDirectionalRegulation" id="highFilterBiDirectionalRegulationOption" name="highFilterBiDirectionalRegulationOption">high Filter BiDirectional Regulation</option>
+        <option value="highFilterDownRegulation" id="highFilterDownRegulationOption" name="highFilterDownRegulationOption">high Filter Down Regulation</option>
+        <option value="highFilterUpRegulation" id="highFilterUpRegulationOption" name="highFilterUpRegulationOption">high Filter Up Regulation</option>
+        <option value="increasingRampRate" id="increasingRampRateOption" name="increasingRampRateOption">increasing Ramp Rate</option>
+        <option value="lowFilterBiDirectionalRegulation" id="lowFilterBiDirectionalRegulationOption" name="lowFilterBiDirectionalRegulationOption">low Filter BiDirectional Regulation</option>
+        <option value="lowFilterDownRegulation" id="lowFilterDownRegulationOption" name="lowFilterDownRegulationOption">low Filter Down Regulation</option>
+        <option value="lowFilterUpRegulation" id="lowFilterUpRegulationOption" name="lowFilterUpRegulationOption">low Filter Up Regulation</option>
+        <option value="reactivePower" id="reactivePowerOption" name="reactivePowerOption">reactive Power</option>
+        <option value="voltage" id="voltageOption" name="voltageOption">voltage</option>
+    </select>
+    </p>
+    Number of Forecast Schedule: <input type="number" min="1" id="nSchedule" name="nSchedule" form="container" required placeholder="number of schedule to create" size="32" autofocus>
+    <script>
+        function generateSchedule(){
+            let nschedules = parseInt(document.getElementById("nSchedule").value);
+            var goNode = document.getElementById("generateSchedules");
+            let i=1;
+            for (i=1;i<=nschedules;i++){
+                let divschedule = document.createElement("div");
+                divschedule.id = 'divSchedule' + i;
+<!--                divschedule.form = "container";-->
+                let pseparator = document.createElement("p");
+                divschedule.appendChild(pseparator);
+                let separator = document.createTextNode("===============================");
+                pseparator.appendChild(separator);
+                goNode.after(divschedule);
+
+                let pstyle = document.createElement("p");
+                divschedule.appendChild(pstyle);
+                let labelstyle = document.createElement("label");
+                labelstyle.appendChild(document.createTextNode("Select Curve Style for Forecast Query:"));
+                labelstyle.style = "display:inline-block;width:400px;"
+                pstyle.appendChild(labelstyle);
+                let selectstyle = document.createElement("select");
+                selectstyle.id = "curveStyle" + i;
+                selectstyle.name = "curveStyle" + i;
+                selectstyle.style = "width:300px;";
+                pstyle.appendChild(selectstyle);
+                let constantYValueOption = document.createElement("option");
+                constantYValueOption.id = "constantYValueOption" + i;
+                constantYValueOption.appendChild(document.createTextNode("constant YValue"));
+                constantYValueOption.value = "constantYValue";
+                selectstyle.appendChild(constantYValueOption);
+                let straightLineYValuesOption = document.createElement("option");
+                straightLineYValuesOption.id = "straightLineYValuesOption" + i;
+                straightLineYValuesOption.appendChild(document.createTextNode("straight Line YValues"));
+                straightLineYValuesOption.value = "straightLineYValues";
+                selectstyle.appendChild(straightLineYValuesOption);
+
+                let ptime = document.createElement("p");
+                divschedule.appendChild(ptime);
+                let labeltime = document.createElement("label");
+                ptime.appendChild(labeltime);
+                labeltime.appendChild(document.createTextNode("Start Time for Forecast Query:"));
+                labeltime.style = "display:inline-block;width:400px;"
+
+                let labelyear = document.createElement("label");
+                ptime.appendChild(labelyear);
+                ptime.appendChild(document.createTextNode(" "));
+                labelyear.appendChild(document.createTextNode("Year"));
+                let inputyear = document.createElement("input");
+                ptime.appendChild(inputyear);
+                inputyear.type = "number";
+                inputyear.id = "year" + i;
+                inputyear.name = "year" + i;
+                inputyear.style = "width:80px;";
+                inputyear.min = "1970";
+                ptime.appendChild(document.createTextNode(" "));
+
+                let labelmonth = document.createElement("label");
+                ptime.appendChild(labelmonth);
+                ptime.appendChild(document.createTextNode(" "));
+                labelmonth.appendChild(document.createTextNode("Month"));
+                let inputmonth = document.createElement("input");
+                ptime.appendChild(inputmonth);
+                inputmonth.type = "number";
+                inputmonth.id = "month" + i;
+                inputmonth.name = "month" + i;
+                inputmonth.style = "width:50px;";
+                inputmonth.min = "1";
+                inputmonth.max = "12";
+                ptime.appendChild(document.createTextNode(" "));
+
+                let labelday = document.createElement("label");
+                ptime.appendChild(labelday);
+                ptime.appendChild(document.createTextNode(" "));
+                labelday.appendChild(document.createTextNode("Day"));
+                let inputday = document.createElement("input");
+                ptime.appendChild(inputday);
+                inputday.type = "number";
+                inputday.id = "day" + i;
+                inputday.name = "day" + i;
+                inputday.style = "width:50px;";
+                inputday.min = "1";
+                inputday.max = "31";
+                ptime.appendChild(document.createTextNode(" "));
+
+                let labelhour = document.createElement("label");
+                ptime.appendChild(labelhour);
+                ptime.appendChild(document.createTextNode(" "));
+                labelhour.appendChild(document.createTextNode("Time"));
+                let inputhour = document.createElement("input");
+                ptime.appendChild(inputhour);
+                inputhour.type = "number";
+                inputhour.id = "hour" + i;
+                inputhour.name = "hour" + i;
+                inputhour.style = "width:50px;";
+                inputhour.min = "0";
+                inputhour.max = "23";
+                ptime.appendChild(document.createTextNode(" "));
+
+                let labelcolon1 = document.createElement("label");
+                ptime.appendChild(labelcolon1);
+                ptime.appendChild(document.createTextNode(" "));
+                labelcolon1.appendChild(document.createTextNode(":"));
+                let inputminute = document.createElement("input");
+                ptime.appendChild(inputminute);
+                inputminute.type = "number";
+                inputminute.id = "minute" + i;
+                inputminute.name = "minute" + i;
+                inputminute.style = "width:50px;";
+                inputminute.min = "0";
+                inputminute.max = "59";
+                ptime.appendChild(document.createTextNode(" "));
+
+                let labelcolon2 = document.createElement("label");
+                ptime.appendChild(labelcolon2);
+                ptime.appendChild(document.createTextNode(" "));
+                labelcolon2.appendChild(document.createTextNode(":"));
+                let inputsecond = document.createElement("input");
+                ptime.appendChild(inputsecond);
+                inputsecond.type = "number";
+                inputsecond.id = "second" + i;
+                inputsecond.name = "second" + i;
+                inputsecond.style = "width:50px;";
+                inputsecond.min = "0";
+                inputsecond.max = "59";
+
+                let pinterval = document.createElement("p");
+                divschedule.appendChild(pinterval);
+                let labelinterval = document.createElement("label");
+                pinterval.appendChild(labelinterval);
+                labelinterval.appendChild(document.createTextNode("Number of Time Intervals for Forecast Query:"));
+                labelinterval.style = "display:inline-block;width:400px;"
+                let inputinterval = document.createElement("input");
+                pinterval.appendChild(inputinterval);
+                inputinterval.type = "number";
+                inputinterval.id = "nIntervals" + i;
+                inputinterval.name = "nIntervals" + i;
+                inputinterval.style = "width:300px;";
+                pinterval.appendChild(document.createElement("br"));
+
+                let pduration = document.createElement("p");
+                divschedule.appendChild(pduration);
+                let labelduration = document.createElement("label");
+                pduration.appendChild(labelduration);
+                labelduration.appendChild(document.createTextNode("Duration of Time Intervals for Forecast Query:"));
+                labelduration.style = "display:inline-block;width:400px;"
+                let inputduration = document.createElement("input");
+                pduration.appendChild(inputduration);
+                inputduration.type = "number";
+                inputduration.id = "intervalDuration" + i;
+                inputduration.name = "intervalDuration" + i;
+                inputduration.style = "width:300px;";
+                pduration.appendChild(document.createElement("br"));
+
+                let punit = document.createElement("p");
+                divschedule.appendChild(punit);
+                let labelunit = document.createElement("label");
+                punit.appendChild(labelunit);
+                labelunit.appendChild(document.createTextNode("Unit of Time Intervals for Forecast Query:"));
+                labelunit.style = "display:inline-block;width:400px;"
+                let selectunit = document.createElement("select");
+                punit.appendChild(selectunit);
+                selectunit.id = "timeIntervalKind" + i;
+                selectunit.name = "timeIntervalKind" + i;
+                selectunit.style = "width:300px;";
+                selectunit.form = "container";
+                let dayOption = document.createElement("option");
+                dayOption.id = "dayOption" + i;
+                dayOption.appendChild(document.createTextNode("D"));
+                dayOption.value = "D";
+                selectunit.appendChild(dayOption);
+<!--                let monthOption = document.createElement("option");-->
+<!--                monthOption.id = "monthOption" + i;-->
+<!--                monthOption.appendChild(document.createTextNode("M"));-->
+<!--                monthOption.value = "M";-->
+<!--                selectunit.appendChild(monthOption);-->
+<!--                let yearOption = document.createElement("option");-->
+<!--                yearOption.id = "yearOption" + i;-->
+<!--                yearOption.appendChild(document.createTextNode("Y"));-->
+<!--                yearOption.value = "Y";-->
+<!--                selectunit.appendChild(yearOption);-->
+                let hourOption = document.createElement("option");
+                hourOption.id = "hourOption" + i;
+                hourOption.appendChild(document.createTextNode("h"));
+                hourOption.value = "h";
+                selectunit.appendChild(hourOption);
+                let minuteOption = document.createElement("option");
+                minuteOption.id = "minuteOption" + i;
+                minuteOption.appendChild(document.createTextNode("m"));
+                minuteOption.value = "m";
+                selectunit.appendChild(minuteOption);
+<!--                let secondOption = document.createElement("option");-->
+<!--                secondOption.id = "secondOption" + i;-->
+<!--                secondOption.appendChild(document.createTextNode("s"));-->
+<!--                secondOption.value = "s";-->
+<!--                selectunit.appendChild(secondOption);-->
+                divschedule.appendChild(document.createElement("br"));
+
+
+            }
+<!--            // generate the submit button-->
+<!--            let psubmit = document.createElement("p");-->
+<!--            let submit_input = document.createElement("input");-->
+<!--            submit_input.type = "submit";-->
+<!--            submit_input.value = "Query Forecasts";-->
+<!--            submit_input.form = "container";-->
+<!--            psubmit.appendChild(submit_input);-->
+<!--            container.appendChild(psubmit);-->
+        }
+    </script>
+    <button id="generateSchedules" type="button" onclick="generateSchedule()">GO</button>
+<!--    <div id="schedule">-->
+<!--        <p>-->
+<!--        <label style="display:inline-block;width:400px;">Select Curve Style for Forecast Query:</label>-->
+<!--        <select id="curveStyle" name="curveStyle" style="width:300px;">-->
+<!--            <option value="constantYValueOption" id="constantYValueOption" name="constantYValueOption">constant YValue</option>-->
+<!--            <option value="straightLineYValuesOption" id="straightLineYValuesOption" name="straightLineYValuesOption">straight Line YValues</option>-->
+<!--        </select>-->
+<!--        </p>-->
+<!--        <p>-->
+<!--            <label style="display:inline-block;width:400px;">Start Time for Forecast Query:</label>-->
+<!--            <label>Year</label>-->
+<!--            <input id="year" name="year" type="number" style="width:80px;" min="1970">-->
+<!--            <label>Month</label>-->
+<!--            <input id="month" name="month" type="number" style="width:50px;" max="12" min="1">-->
+<!--            <label>Day</label>-->
+<!--            <input id="day" name="day" type="number" style="width:50px;" max="31" min="1">-->
+<!--            <label>Time</label>-->
+<!--            <input id="hour" name="hour" type="number" style="width:50px;" max="23" min="0">-->
+<!--            <label>:</label>-->
+<!--            <input id="minute" name="minute" type="number" style="width:50px;" max="59" min="0">-->
+<!--            <label>:</label>-->
+<!--            <input id="second" name="second" type="number" style="width:50px;" max="59" min="0">-->
+<!--        </p>-->
+<!--        <p>-->
+<!--        <label style="display:inline-block;width:400px;">Number of Time Intervals for Forecast Query:</label>-->
+<!--        <input id="nIntervals" name="nIntervals" type="number" style="width:300px;"><br>-->
+<!--        </p>-->
+<!--        <p>-->
+<!--        <label style="display:inline-block;width:400px;">Duration of Time Intervals for Forecast Query:</label>-->
+<!--        <input id="intervalDuration" name="intervalDuration" type="number" style="width:300px;"><br>-->
+<!--        </p>-->
+<!--        <p>-->
+<!--            <label style="display:inline-block;width:400px;">Unit of Time Intervals for Forecast Query:</label>-->
+<!--            <select id="timeIntervalKind" name="timeIntervalKind" style="width:300px;">-->
+<!--                <option value="D" id="dayOption" name="constantYValueOption">D</option>-->
+<!--                <option value="M" id="monthOption" name="monthOption">M</option>-->
+<!--                <option value="Y" id="yearOption" name="yearOption">Y</option>-->
+<!--                <option value="h" id="hourOption" name="hourOption">h</option>-->
+<!--                <option value="m" id="minuteOption" name="minuteOption">m</option>-->
+<!--                <option value="s" id="secondOption" name="secondOption">s</option>-->
+<!--            </select>-->
+<!--        </p><br>-->
+<!--    </div>-->
+
+<!--    <input type="button" value="Add A Schedule" onclick="addASchedule()"><br>-->
+    <p>
+        <input type="submit" value="Query Forecasts">
+    </p>
+</form>
+{% endif %}
+</body>
+</html>

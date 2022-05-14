@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Group Status</title>
+    <script src="/js/jquery-3.4.1.min.js"></script>
+    <script>
+        function splitType(type){
+            var arr = type.split(/(?=[A-Z])/);
+            var re = arr.join(' ');
+            document.getElementById('pkind').innerHTML = re + ": ";
+        }
+    </script>
+</head>
+<body>
+<a href="/menu">Home</a> &nbsp;
+<a href="/get_group_status">Query Group Status</a> &nbsp;
+<a href="/dispatch_group">Dispatch Group</a>
+<br>
+<br>
+<h2>DER group status:</h2>
+    {% if not gstatus %}
+    <h1>No status returned</h1>
+    {% endif %}
+    {% if gstatus %}
+        {% for ggroup in gstatus %}
+            <div style="padding-left:30px;">
+                Group mRID: {{ggroup.mRID}}<br>
+                {% for gname in ggroup.Names %}
+                Group name: {{gname.name}}<br>
+                {% endfor %}
+                <div style="padding-left:30px;">
+                {% for gparameter in ggroup.DERMonitorableParameter %}
+                    <b id="pkind">
+                    <script>
+                    document.currentScript.parentElement.innerHTML = "{{gparameter.DERParameter}}".split(/(?=[A-Z])/).join(' ') + ": ";
+                    </script>
+                    </b><br>
+                    Multiplier: {{gparameter.yMultiplier}}<br>
+                    Unit: {{gparameter.yUnit}}<br>
+                    Norminal Value: {{gparameter.DERCurveData.nominalYValue}}<br>
+                    Timestamp: {{gparameter.DERCurveData.timeStamp}}<br><br>
+                {% endfor %}
+                </div>
+            </div>
+        {% endfor %}
+    {% endif %}
+</body>
+</html>

@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+
+<a href="/menu">Home</a> &nbsp;
+<a href="/create_group">Create Another Group</a> &nbsp;
+<a href="/edit_group">Modify Another Group</a>
+<br>
+<br>
+<h2>DER group successfully {{message}}:</h2>
+<br>
+
+
+<p>MRID of the group: {{group.mrid}}</p>
+<p>Name of the group: {{group.name}}</p>
+<p>Device(s) of the group:</p>
+{% for dev in group.devices %}
+<div style="padding-left:30px;">
+    device mRID: {{dev.mRID}}<br>
+    device name: {{dev.name}}<br>
+    is smart meter? {{dev.isSmartInverter}}<br>
+    usage point: {{dev.usagePoint}}<br>
+</div>
+<br>
+{% endfor %}
+<p>DER functions of the group:</p>
+<div style="padding-left:30px;">
+    connectDisconnect: {{group.derFunctions.connectDisconnect}}<br>
+    frequencyWattCurveFunction: {{group.derFunctions.frequencyWattCurveFunction}}<br>
+    maxRealPowerLimiting: {{group.derFunctions.maxRealPowerLimiting}}<br>
+    rampRateControl: {{group.derFunctions.rampRateControl}}<br>
+    reactivePowerDispatch: {{group.derFunctions.reactivePowerDispatch}}<br>
+    realPowerDispatch: {{group.derFunctions.realPowerDispatch}}<br>
+    voltageRegulation: {{group.derFunctions.voltageRegulation}}<br>
+    voltVarCurveFunction: {{group.derFunctions.voltVarCurveFunction}}<br>
+    voltWattCurveFunction: {{group.derFunctions.voltWattCurveFunction}}<br>
+</div>
+
+
+</body>
+</html>
