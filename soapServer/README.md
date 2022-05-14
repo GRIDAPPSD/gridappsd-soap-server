@@ -16,6 +16,7 @@ Scripts in this directory set up a SOAP (Simple Object Access Protocol) server t
 
 1. Clone the gridappsd-docker repository
     ```console
+    mkdir src // if src exists, change directory to src
     git clone https://github.com/GRIDAPPSD/gridappsd-docker
     cd gridappsd-docker
     ```
@@ -27,25 +28,45 @@ Scripts in this directory set up a SOAP (Simple Object Access Protocol) server t
     ```console
     ./run-gridappsd.sh
     ```
-5. Start another terminal and clone this repository (Skip to step 7 if the repository was already cloned and environment was setup)
+4. Start another terminal and clone this repository (Skip to step 7 if the repository was already cloned and environment was setup)
     ```console
+    // go back to the src directory first
     git clone https://github.com/GRIDAPPSD/gridappsd-soap-server.git
     cd gridappsd-soap-server/    
     ```    
-6. Install the virtual environment (optional)
+5. Install the virtual environment (optional)
     ```console
     python -m venv env (optional)
     source env/bin/activate (optional, or source env/Scripts/activate for Windows)
     ```
-7. Install the required packages
+6. Install the required packages
     ```console
     pip install -r requirements.txt
     ```
-1. Start the server
+   
+7. Set up the power flow model
     ```console
-    cd soapServer
-    python soap_server.py 
+    cd circuit
+    python upload_circuit.py
     ```
+   
+8. Insert enddevices to the model
+    ```console
+    // go back to the src directory first
+    git clone https://github.com/GRIDAPPSD/Powergrid-Models.git -b enddevice
+    cd Powergrid-Models/enddevices
+    python addUsagePointsandEndDevices.py
+    ```
+   If user wants to preserve the UUID of the added enddevice, the xml endDevicesAndUsagePoints.xml can be read in instead of generate new UUID in the script by comment/uncomment some of the code. If the script is run as it is, a new endDevicesAndUsagePoints.xml will be generated and can be used later to keep the UUID the same.
+
+
+
+10. Start the server
+     ```console
+     // go back to the src directory first
+     cd gridappsd-soap-server/soapServer
+     python soap_server.py 
+     ```
 Now this soap server is running in the background, user can use the [DER GUI](http://127.0.0.1:8442/) and start testing.
 
     
