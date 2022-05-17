@@ -10,7 +10,7 @@ dateutils==0.6.7
 docopt==0.6.2
 Flask==2.1.2
 fonttools==4.31.1
-gridappsd-python==2.2.20220401
+gridappsd-python
 idna==3.3
 importlib-metadata==4.11.3
 isodate==0.6.1
@@ -33,7 +33,7 @@ py==1.8.1
 pyparsing==2.4.6
 pytest==5.3.2
 python-dateutil==2.8.2
-pytz==2022.1
+pytz
 PyYAML==5.4
 rdflib==6.1.1
 requests==2.27.1
