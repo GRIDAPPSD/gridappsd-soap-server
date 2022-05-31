@@ -52,9 +52,7 @@ Scripts in this directory set up a SOAP (Simple Object Access Protocol) server t
    
 8. Insert enddevices to the model
     ```console
-    // go back to the src directory first
-    git clone https://github.com/GRIDAPPSD/Powergrid-Models.git -b enddevice
-    cd Powergrid-Models/enddevices
+    cd enddevices
     python addUsagePointsandEndDevices.py
     ```
    If user wants to preserve the UUID of the added enddevice, the xml endDevicesAndUsagePoints.xml can be read in instead of generate new UUID in the script by comment/uncomment some of the code. If the script is run as it is, a new endDevicesAndUsagePoints.xml will be generated and can be used later to keep the UUID the same.
