@@ -79,7 +79,7 @@ ORDER by ?p ?name
 # run from command line for GridAPPS-D interop circuit
 if __name__ == '__main__':
   cfg_file = 'cimhubconfig.json'
-  ckt_mRID = '_503D6E20-F499-4CC7-8051-971E23D0BF79'
+  ckt_mRID = '503D6E20-F499-4CC7-8051-971E23D0BF79'
   froot = 'Transactive'
   outpath = None
   pv_size = 3000.0

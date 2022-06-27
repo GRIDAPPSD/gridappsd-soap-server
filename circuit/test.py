@@ -10,7 +10,7 @@ import shutil
 
 cfg_json = 'cimhubconfig.json'
 CIMHubConfig.ConfigFromJsonFile (cfg_json)
-ckt_mRID = '_503D6E20-F499-4CC7-8051-971E23D0BF79'
+ckt_mRID = '503D6E20-F499-4CC7-8051-971E23D0BF79'
 froot = 'Transactive'
 cwd = os.getcwd()
 
