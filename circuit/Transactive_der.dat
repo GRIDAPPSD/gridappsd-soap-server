@@ -9,9 +9,9 @@ feederID,503D6E20-F499-4CC7-8051-971E23D0BF79
 //
 // commercial-scale, three-phase DER connected to the primary feeder
 PV_1,    node_60, ABC, Photovoltaic,       2000.0, 2230.0, 4.16, 2000.0, 0.0, catB, CQ
-Bat_PV,  node_60, ABC, Battery,            2000.0, 2000.0, 4.16,    0.0, 0.0, catB, CQ, 8000.0, 4000.0
+Bat_PV,  node_60, ABC, Battery,            2000.0, 2230.0, 4.16,    0.0, 0.0, catB, CQ, 8000.0, 4000.0
 WTG_1,   node_1,  ABC, SynchronousMachine, 2000.0, 2230.0, 4.16, 2000.0, 0.0
-Bat_WTG, node_1,  ABC, Battery,            2000.0, 2000.0, 4.16,    0.0, 0.0, catB, CQ, 8000.0, 4000.0
+Bat_WTG, node_1,  ABC, Battery,            2000.0, 2230.0, 4.16,    0.0, 0.0, catB, CQ, 8000.0, 4000.0
 //
 // adding rooftop PV sized 3.00 kW at 90.00% penetration
 Rooftop_1,house_agg_0_a_10_node_11_102,s1s2,Photovoltaic,3.000,3.129,0.208,3.000,0.000,catA,CQ

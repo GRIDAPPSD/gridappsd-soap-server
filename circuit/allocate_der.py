@@ -1,3 +1,6 @@
+# Copyright (C) 2021-2022 Battelle Memorial Institute
+# file: allocate_der.py
+
 from SPARQLWrapper import SPARQLWrapper2#, JSON
 import cimhub.CIMHubConfig as CIMHubConfig
 import sys
@@ -32,9 +35,9 @@ def create_der_list (cfg_file, froot, mRID, outpath, pv_size, pv_penetration):
   print ('//', file=op)
   print ('// commercial-scale, three-phase DER connected to the primary feeder', file=op)
   print ('PV_1,    node_60, ABC, Photovoltaic,       2000.0, 2230.0, 4.16, 2000.0, 0.0, catB, CQ', file=op)
-  print ('Bat_PV,  node_60, ABC, Battery,            2000.0, 2000.0, 4.16,    0.0, 0.0, catB, CQ, 8000.0, 4000.0', file=op)
+  print ('Bat_PV,  node_60, ABC, Battery,            2000.0, 2230.0, 4.16,    0.0, 0.0, catB, CQ, 8000.0, 4000.0', file=op)
   print ('WTG_1,   node_1,  ABC, SynchronousMachine, 2000.0, 2230.0, 4.16, 2000.0, 0.0', file=op)
-  print ('Bat_WTG, node_1,  ABC, Battery,            2000.0, 2000.0, 4.16,    0.0, 0.0, catB, CQ, 8000.0, 4000.0', file=op)
+  print ('Bat_WTG, node_1,  ABC, Battery,            2000.0, 2230.0, 4.16,    0.0, 0.0, catB, CQ, 8000.0, 4000.0', file=op)
   print ('//', file=op)
   print ('// adding rooftop PV sized {:.2f} kW at {:.2f}% penetration'.format (kwmax, 100.0 * pv_penetration), file=op)
 

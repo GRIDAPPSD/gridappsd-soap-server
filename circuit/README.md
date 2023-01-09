@@ -14,7 +14,10 @@ The archived files include:
 
 ## Uploading Process
 
-The test case upload is performed with ```python3 upload_circuit.py```. This relies on completing the test case conversion and validation as described below, with results archived in the repository. The upload script does these steps:
+The test case upload is performed with ```python3 upload_circuit.py```. 
+This relies on completing the test case conversion and validation as 
+described below, with results archived in the repository. The upload 
+script does these steps: 
 
 1. Empty the database
 2. Upload the CIM XML to Blazegraph
@@ -22,7 +25,24 @@ The test case upload is performed with ```python3 upload_circuit.py```. This rel
 4. Insert DER. Near the substation, there is a 2-MW Synchronous Machine (Wind) with 2-MW, 4-hour battery. Out on the feeder, there is a 2-MW PV installation with a 2-MW, 4-hour battery. There are also 1134 rooftop PV, rated 3 kW each, installed at 90% of the EnergyConsumer locations.
 5. List and insert CIM measurement points on the feeder
 
-A developer following this process should have the Blazegraph container installed, and the CIMHub repository cloned from GitHub. From the local CIMHub directory, invoke ```pip3 install -e .``` because the cimhub package on PyPi may not have the latest features and fixes. However, it is not necessary to build the CIMImporter Java program, nor use OpenDSS or GridLAB-D, in following this process.
+A developer following this process should have the Blazegraph container 
+installed, and the CIMHub repository cloned from GitHub. From the local 
+CIMHub directory, invoke ```pip3 install -e .``` because the cimhub 
+package on PyPi may not have the latest features and fixes. However, it is 
+not necessary to build the CIMImporter Java program, nor use OpenDSS or 
+GridLAB-D, in following this process. 
+
+If GridLAB-D is installed, check the test case upload with ```python3 test.py```. The results shold appear as below.
+
+
+```
+  GridLAB-D branch flow in LINE_LINE_L114 from NODE_135
+  Phs     Volts     rad      Amps     rad         kW          kVAR   PhsPhs     Volts     rad
+    A   2366.22 -0.0081     90.37 -0.5747    180.422 + j   114.758     AB     4124.41  0.5297
+    B   2418.03  4.1964     71.05  3.5953    141.693 + j    97.166     BC     4145.88 -1.5673
+    C   2372.95  2.1047     71.18  1.5843    146.543 + j    83.991     CA     4125.97  2.6183
+    Total S =   468.658 + j   295.916
+```
 
 ## Conversion and Validation Process
 
@@ -48,6 +68,10 @@ Each array element is a dictionary with the following keys:
 - **bases** is an array of voltage bases to use for interpretation of the voltage outputs. Specify line-to-line voltages, in ascending order, leaving out 208 and 480.
 - **export_options** is a string of command-line options to the CIMImporter Java program. ```-e=carson``` keeps the OpenDSS line constants model compatible with GridLAB-D's
 - **skip_gld** specify as ```True``` when you know that GridLAB-D won't support this test case
+- **outpath_dss** specifies the output directory for OpenDSS model
+- **outpath_glm** specifies the output directory for GridLAB-D model
+- **outpath_csv** specifies the output directory for CSV files
+- **path_xml** specifies the output directory for baseline OpenDSS solution and CIM XML export
 - **check_branches** an array of branches in the model to compare power flows and line-to-line voltages. Each element contains:
     - **dss_link** is the name of an OpenDSS branch for power and current flow; power delivery or power conversion components may be used
     - **dss_bus** is the name of an OpenDSS bus attached to **dss_link**. Line-to-line voltages are calculated here, and this bus establishes flow polarity into the branch at this bus.
@@ -72,7 +96,6 @@ and exported OpenDSS cases.
 
 ```
 WITHOUT HOUSES or DER
-
   OpenDSS branch flow in LINE.LINE_L114 from NODE_135, Base case
   Phs     Volts     rad      Amps     rad         kW          kVAR   PhsPhs     Volts     rad
     A   2336.79 -0.0663    157.56 -0.0939    368.056 + j    10.152     AB     4065.41  0.4871
@@ -108,10 +131,10 @@ WITH DER and WITH HOUSES (GridLAB-D only)
     Total S =   133.366 + j    10.587
   GridLAB-D branch flow in LINE_LINE_L114 from NODE_135
   Phs     Volts     rad      Amps     rad         kW          kVAR   PhsPhs     Volts     rad
-    A   2366.61 -0.0079     89.30 -0.5756    178.172 + j   113.640     AB     4124.64  0.5296
-    B   2417.36  4.1963     70.99  3.5949    141.505 + j    97.088     BC     4145.60 -1.5672
-    C   2373.35  2.1047     70.29  1.5836    144.680 + j    83.033     CA     4126.24  2.6184
-    Total S =   464.357 + j   293.761
-Transactive      Nbus=[  3036,  3036,  7882] Nlink=[  5507,  7787,   690] MAEv=[ 0.0465, 0.0149] MAEi=[   8.0401,  42.6860]
+    A   2366.22 -0.0081     90.37 -0.5747    180.422 + j   114.758     AB     4124.41  0.5297
+    B   2418.03  4.1964     71.05  3.5953    141.693 + j    97.166     BC     4145.88 -1.5673
+    C   2372.95  2.1047     71.18  1.5843    146.543 + j    83.991     CA     4125.97  2.6183
+    Total S =   468.658 + j   295.916
+Transactive      Nbus=[  3036,  3036,  7882] Nlink=[  5507,  7787,   690] MAEv=[ 0.0465, 0.0149] MAEi=[   8.0401,  42.6030]
 ```
 
