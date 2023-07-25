@@ -1,6 +1,6 @@
 attrs==19.3.0
 cached-property==1.5.2
-certifi==2022.12.7
+certifi==2023.7.22
 charset-normalizer==2.0.12
 -e git+https://github.com/GRIDAPPSD/CIMHub.git@53e7dc9e3d64304eb18ae9bd041725bbed9c703d#egg=cimhub
 click==8.1.3
